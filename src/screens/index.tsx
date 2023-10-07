@@ -5,7 +5,7 @@ import {
 } from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-import Login from '@/screens/Login'
+import Login from '@/screens/Login';
 
 import {RootStackParamList} from '@/types/navigation';
 

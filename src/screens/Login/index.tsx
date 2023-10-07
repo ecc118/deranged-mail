@@ -1,14 +1,14 @@
 import React from 'react';
-import {Text} from 'react-native';
+import Text from '@/components/Text';
 
-import { RootStackScreenProps } from '@/types/navigation'
+import {RootStackScreenProps} from '@/types/navigation';
 
-type LoginProps = RootStackScreenProps<'Login'>
+type LoginProps = RootStackScreenProps<'Login'>;
 
 const Login = ({navigation}: LoginProps) => {
   return (
     <>
-      <Text>Login</Text>
+      <Text type="heading">Login</Text>
     </>
   );
 };
