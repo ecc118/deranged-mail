@@ -34,7 +34,7 @@ const TextStyled = styled.Text<TextStyledProps>`
   color: ${({color, theme}) => theme.colors[color]};
 `;
 
-const Text = ({type = 'body', color = 'black', ...props}: TextProps) => {
+const Text = ({type = 'body', color = 'white', ...props}: TextProps) => {
   return <TextStyled type={type} color={color} {...props} />;
 };
 

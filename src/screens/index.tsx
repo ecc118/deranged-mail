@@ -21,7 +21,11 @@ const Navigation = ({onReady}: NavigationProps) => {
   return (
     <NavigationContainer ref={navigation}>
       <RootStack.Navigator>
-        <RootStack.Screen name="Login" component={Login} />
+        <RootStack.Screen
+          name="Login"
+          component={Login}
+          options={{headerShown: false}}
+        />
       </RootStack.Navigator>
     </NavigationContainer>
   );

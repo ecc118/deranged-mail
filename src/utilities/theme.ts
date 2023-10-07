@@ -13,11 +13,23 @@ const theme: DefaultTheme = {
     white: '#FFFFFF',
   },
   typography: {
+    headingL: {
+      fontFamily: FONT_FAMILY,
+      fontStyle: 'normal',
+      fontSize: 40,
+      lineHeight: 40,
+    },
     heading: {
       fontFamily: FONT_FAMILY,
       fontStyle: 'normal',
       fontSize: 32,
       lineHeight: 40,
+    },
+    headingS: {
+      fontFamily: FONT_FAMILY,
+      fontStyle: 'normal',
+      fontSize: 20,
+      lineHeight: 24,
     },
     body: {
       fontFamily: FONT_FAMILY,

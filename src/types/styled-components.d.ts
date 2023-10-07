@@ -12,7 +12,9 @@ export interface Colors {
 }
 
 export interface Typography {
+  headingL: TextStyle;
   heading: TextStyle;
+  headingS: TextStyle;
   body: TextStyle;
 }
 
