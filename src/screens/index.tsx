@@ -6,6 +6,7 @@ import {
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
 import Login from '@/screens/Login';
+import Home from '@/screens/Home';
 
 import {RootStackParamList} from '@/types/navigation';
 
@@ -15,7 +16,7 @@ interface NavigationProps {
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
-const Navigation = ({onReady}: NavigationProps) => {
+const Navigation = ({}: NavigationProps) => {
   const navigation = useRef<NavigationContainerRef<RootStackParamList>>(null);
 
   return (
@@ -24,6 +25,11 @@ const Navigation = ({onReady}: NavigationProps) => {
         <RootStack.Screen
           name="Login"
           component={Login}
+          options={{headerShown: false}}
+        />
+        <RootStack.Screen
+          name="Home"
+          component={Home}
           options={{headerShown: false}}
         />
       </RootStack.Navigator>

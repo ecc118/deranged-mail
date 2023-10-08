@@ -5,33 +5,36 @@ import Text from '@/components/Text';
 import TextInput from '@/components/TextInput';
 import Button from '@/components/Button';
 
-interface FormProps {
-  onPress: () => void;
-}
-
 const Container = styled.View`
+  margin-bottom: 20px;
+`;
+
+const InputContainer = styled.View`
+  flex-direction: row;
   border-width: 3px;
   border-color: ${({theme}) => theme.colors.accent};
-  padding: 40px;
-  background-color: ${({theme}) => theme.colors.onyx};
+  margin-bottom: 10px;
 `;
 
 const Label = styled(Text)`
   margin-bottom: 5px;
 `;
 
-const EnterButton = styled(Button)`
-  margin-top: 6px;
+const Input = styled(TextInput)`
+  flex: 1;
 `;
 
-const Form = ({onPress}: FormProps) => {
+const Header = () => {
   return (
     <Container>
-      <Label>username</Label>
-      <TextInput />
-      <EnterButton onPress={onPress}>ENTER</EnterButton>
+      <Label>search for user</Label>
+      <InputContainer>
+        <Input />
+        <Button>search</Button>
+      </InputContainer>
+      <Text>known users:</Text>
     </Container>
   );
 };
 
-export default Form;
+export default Header;

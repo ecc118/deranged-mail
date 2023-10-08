@@ -18,13 +18,17 @@ const Content = styled.View`
 `;
 
 const Login = ({navigation}: LoginProps) => {
+  const handleEnter = () => {
+    navigation.navigate('Home');
+  };
+
   return (
     <Container>
       <Content>
         <Text type="headingL" color="accent">
           ENTRANCE
         </Text>
-        <Form />
+        <Form onPress={handleEnter} />
       </Content>
     </Container>
   );
