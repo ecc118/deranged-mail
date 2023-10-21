@@ -1,11 +1,11 @@
-import React from 'react';
+import React, {ReactNode} from 'react';
 import {TouchableOpacityProps} from 'react-native';
 import styled from 'styled-components/native';
 
 import Text from '@/components/Text';
 
 interface ButtonProps extends TouchableOpacityProps {
-  children: string;
+  children: string | ReactNode;
 }
 
 const Container = styled.TouchableOpacity`
@@ -18,9 +18,13 @@ const Container = styled.TouchableOpacity`
 const Button = ({children, ...props}: ButtonProps) => {
   return (
     <Container {...props}>
-      <Text type="heading" color="white">
-        {children}
-      </Text>
+      {typeof children === 'string' ? (
+        <Text type="heading" color="white">
+          {children}
+        </Text>
+      ) : (
+        children
+      )}
     </Container>
   );
 };

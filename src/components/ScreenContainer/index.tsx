@@ -4,7 +4,7 @@ import styled from 'styled-components/native';
 import {useHeaderHeight} from '@react-navigation/elements';
 
 interface ScreenContainerProps {
-  hasNavigationPadding: boolean;
+  hasNavigationPadding?: boolean;
 }
 
 const Container = styled.SafeAreaView<{height: number}>`

@@ -5,6 +5,9 @@ import Text from '@/components/Text';
 import TextInput from '@/components/TextInput';
 import Button from '@/components/Button';
 
+import SearchUserIcon from '@/assets/icons/search-user.svg';
+import MultipleUserIcon from '@/assets/icons/multiple-user.svg';
+
 const Container = styled.View`
   margin-bottom: 20px;
 `;
@@ -24,15 +27,31 @@ const Input = styled(TextInput)`
   flex: 1;
 `;
 
+const LabelContainer = styled.View`
+  flex-direction: row;
+  margin-top: 20px;
+`;
+
+const IconContainer = styled.View`
+  margin-right: 8px;
+`;
+
 const Header = () => {
   return (
     <Container>
       <Label>search for user</Label>
       <InputContainer>
         <Input />
-        <Button>search</Button>
+        <Button>
+          <SearchUserIcon />
+        </Button>
       </InputContainer>
-      <Text>known users:</Text>
+      <LabelContainer>
+        <IconContainer>
+          <MultipleUserIcon />
+        </IconContainer>
+        <Text>known users</Text>
+      </LabelContainer>
     </Container>
   );
 };

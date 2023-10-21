@@ -5,6 +5,8 @@ import Text from '@/components/Text';
 import TextInput from '@/components/TextInput';
 import Button from '@/components/Button';
 
+import LoginIcon from '@/assets/icons/login.svg';
+
 interface FormProps {
   onPress: () => void;
 }
@@ -29,7 +31,9 @@ const Form = ({onPress}: FormProps) => {
     <Container>
       <Label>username</Label>
       <TextInput />
-      <EnterButton onPress={onPress}>ENTER</EnterButton>
+      <EnterButton onPress={onPress}>
+        <LoginIcon />
+      </EnterButton>
     </Container>
   );
 };

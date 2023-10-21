@@ -13,6 +13,7 @@ type LoginProps = RootStackScreenProps<'Login'>;
 const Container = styled(ScreenContainer)`
   justify-content: center;
 `;
+
 const Content = styled.View`
   margin: -40px 20px 0 20px;
 `;

@@ -7,6 +7,7 @@ import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
+import styled from 'styled-components/native';
 
 import Login from '@/screens/Login';
 import Home from '@/screens/Home';
@@ -28,29 +29,36 @@ const HEADER: NativeStackNavigationOptions = {
   headerTitleStyle: {color: theme.colors.white, fontFamily: FONT_FAMILY},
 };
 
+const Container = styled.View`
+  flex: 1;
+  background-color: ${({theme}) => theme.colors.black};
+`;
+
 const Navigation = ({}: NavigationProps) => {
   const navigation = useRef<NavigationContainerRef<RootStackParamList>>(null);
 
   return (
-    <NavigationContainer ref={navigation}>
-      <RootStack.Navigator>
-        <RootStack.Screen
-          name="Login"
-          component={Login}
-          options={{headerShown: false}}
-        />
-        <RootStack.Screen
-          name="Home"
-          component={Home}
-          options={{headerShown: false}}
-        />
-        <RootStack.Screen
-          name="Room"
-          component={Room}
-          options={{headerLeft: () => <BackButton />, ...HEADER}}
-        />
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <Container>
+      <NavigationContainer ref={navigation}>
+        <RootStack.Navigator>
+          <RootStack.Screen
+            name="Login"
+            component={Login}
+            options={{headerShown: false}}
+          />
+          <RootStack.Screen
+            name="Home"
+            component={Home}
+            options={{headerShown: false}}
+          />
+          <RootStack.Screen
+            name="Room"
+            component={Room}
+            options={{headerLeft: () => <BackButton />, ...HEADER}}
+          />
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </Container>
   );
 };
 
