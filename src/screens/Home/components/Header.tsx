@@ -19,11 +19,9 @@ const InputContainer = styled.View`
   margin-bottom: 10px;
 `;
 
-const Label = styled(Text)`
-  margin-bottom: 5px;
-`;
-
-const Input = styled(TextInput)`
+const Input = styled(TextInput).attrs(({theme}) => ({
+  placeholderTextColor: theme.colors.gray,
+}))`
   flex: 1;
 `;
 
@@ -39,9 +37,8 @@ const IconContainer = styled.View`
 const Header = () => {
   return (
     <Container>
-      <Label>search for user</Label>
       <InputContainer>
-        <Input />
+        <Input placeholder="search for user" />
         <Button>
           <SearchUserIcon />
         </Button>
