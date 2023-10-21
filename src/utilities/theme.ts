@@ -1,6 +1,6 @@
 import {DefaultTheme} from 'styled-components/native';
 
-const FONT_FAMILY = 'VT323-Regular';
+export const FONT_FAMILY = 'VT323-Regular';
 
 const theme: DefaultTheme = {
   colors: {

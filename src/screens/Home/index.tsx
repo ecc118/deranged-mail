@@ -14,12 +14,16 @@ const Content = styled.View`
   margin: 20px;
 `;
 
-const Home = ({}: HomeProps) => {
+const Home = ({navigation}: HomeProps) => {
+  const handleNavigateChatRoom = () => {
+    navigation.navigate('Room');
+  };
+
   return (
     <ScreenContainer>
       <Content>
         <Header />
-        <User name="bidalaga" />
+        <User name="bidalaga" onPress={handleNavigateChatRoom} />
         <User name="john horsemass" />
         <User name="Capenjoyer" />
       </Content>
