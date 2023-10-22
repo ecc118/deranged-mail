@@ -9,19 +9,17 @@ import React, {
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
+import {User} from '@/types';
+
 interface AuthContextProviderProps {
   children: ReactNode;
-}
-
-interface User {
-  uid: string;
-  username: string;
 }
 
 export const AuthContext = createContext<{
   currentUser?: User;
   initializing: boolean;
   onSignIn?: (username: string) => void;
+  fetchUser?: (uid: string) => Promise<void>;
 }>({initializing: true});
 
 const AuthContextProvider = ({children}: AuthContextProviderProps) => {
@@ -57,7 +55,7 @@ const AuthContextProvider = ({children}: AuthContextProviderProps) => {
       await firestore()
         .collection('users')
         .doc(authRes.user.uid)
-        .set({username: username, uid: authRes.user.uid});
+        .set({username: username, uid: authRes.user.uid, knownUsers: []});
       await handleGetUser(authRes.user.uid);
       registerInitializingRef.current = false;
     } catch (e) {
@@ -74,7 +72,12 @@ const AuthContextProvider = ({children}: AuthContextProviderProps) => {
 
   return (
     <AuthContext.Provider
-      value={{currentUser, initializing, onSignIn: handleSignIn}}>
+      value={{
+        currentUser,
+        initializing,
+        onSignIn: handleSignIn,
+        fetchUser: handleGetUser,
+      }}>
       {children}
     </AuthContext.Provider>
   );

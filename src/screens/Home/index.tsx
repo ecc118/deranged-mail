@@ -2,6 +2,7 @@ import React, {useContext} from 'react';
 import styled from 'styled-components/native';
 
 import {RootStackScreenProps} from '@/types/navigation';
+import {KnownUser} from '@/types';
 
 import ScreenContainer from '@/components/ScreenContainer';
 import {AuthContext} from '@/components/AuthContextProvider';
@@ -11,23 +12,31 @@ import Header from './components/Header';
 
 type HomeProps = RootStackScreenProps<'Home'>;
 
-const Content = styled.View`
+const Content = styled.ScrollView`
   margin: 20px;
 `;
 
 const Home = ({navigation}: HomeProps) => {
-  const {} = useContext(AuthContext);
+  const {currentUser} = useContext(AuthContext);
   const handleNavigateChatRoom = () => {
     navigation.navigate('Room');
   };
 
+  const renderKnownUsers = (item: KnownUser) => {
+    return (
+      <User
+        key={item.uid}
+        name={item.username}
+        onPress={handleNavigateChatRoom}
+      />
+    );
+  };
+
   return (
     <ScreenContainer>
-      <Content>
+      <Content keyboardShouldPersistTaps="handled">
         <Header />
-        <User name="bidalaga" onPress={handleNavigateChatRoom} />
-        <User name="john horsemass" />
-        <User name="Capenjoyer" />
+        {currentUser?.knownUsers?.map(renderKnownUsers)}
       </Content>
     </ScreenContainer>
   );
