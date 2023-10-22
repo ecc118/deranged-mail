@@ -19,9 +19,7 @@ const InputContainer = styled.View`
   margin-bottom: 10px;
 `;
 
-const Input = styled(TextInput).attrs(({theme}) => ({
-  placeholderTextColor: theme.colors.gray,
-}))`
+const Input = styled(TextInput)`
   flex: 1;
 `;
 

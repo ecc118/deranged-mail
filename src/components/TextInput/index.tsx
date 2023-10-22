@@ -2,8 +2,10 @@ import React from 'react';
 import {TextInputProps} from 'react-native';
 import styled from 'styled-components/native';
 
+import theme from '@/utilities/theme';
+
 const Input = styled.TextInput`
-  ${({theme}) => {
+  ${() => {
     const typography = theme.typography.headingS;
 
     return `
@@ -19,13 +21,13 @@ const Input = styled.TextInput`
     `;
   }}
 
-  color: ${({theme}) => theme.colors.main};
+  color: ${theme.colors.main};
   padding-left: 12px;
-  background-color: ${({theme}) => theme.colors.black};
+  background-color: ${theme.colors.black};
 `;
 
 const TextInput = ({...props}: TextInputProps) => {
-  return <Input {...props} />;
+  return <Input placeholderTextColor={theme.colors.gray} {...props} />;
 };
 
 export default TextInput;

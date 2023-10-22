@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import styled from 'styled-components/native';
 
-import Text from '@/components/Text';
 import TextInput from '@/components/TextInput';
 import Button from '@/components/Button';
 
 import LoginIcon from '@/assets/icons/login.svg';
+import StopIcon from '@/assets/icons/stop.svg';
 
 interface FormProps {
   onPress: (username: string) => void;
@@ -18,16 +18,13 @@ const Container = styled.View`
   background-color: ${({theme}) => theme.colors.onyx};
 `;
 
-const Label = styled(Text)`
-  margin-bottom: 5px;
-`;
-
 const EnterButton = styled(Button)`
   margin-top: 6px;
 `;
 
 const Form = ({onPress}: FormProps) => {
   const [username, setUsername] = useState<string>('');
+  const enterIcon = !username ? <StopIcon /> : <LoginIcon />;
 
   const handleEnter = () => {
     onPress(username);
@@ -35,10 +32,13 @@ const Form = ({onPress}: FormProps) => {
 
   return (
     <Container>
-      <Label>username</Label>
-      <TextInput value={username} onChangeText={setUsername} />
+      <TextInput
+        value={username}
+        onChangeText={setUsername}
+        placeholder="enter username"
+      />
       <EnterButton onPress={handleEnter} disabled={!username}>
-        <LoginIcon />
+        {enterIcon}
       </EnterButton>
     </Container>
   );
