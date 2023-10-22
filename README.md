@@ -5,6 +5,7 @@ messaging for slightly deranged
 ### Firebase
 
 add `google-services.json` to `android/app/`
+add `GoogleService-Info.plist` to `ios/`
 
 ## Step 1: Start the Metro Server
 
