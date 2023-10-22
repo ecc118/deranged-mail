@@ -1,4 +1,5 @@
-import React, {useRef} from 'react';
+import React, {useRef, useMemo} from 'react';
+import {Platform} from 'react-native';
 import {ListRenderItem, FlatList} from 'react-native';
 import styled from 'styled-components/native';
 
@@ -19,6 +20,10 @@ interface Message {
 const Content = styled.View`
   flex: 1;
   margin: 20px 20px 0 20px;
+`;
+
+const KeyboardAvoidingContainer = styled.KeyboardAvoidingView`
+  flex: 1;
 `;
 
 const MOCK_USER_USERNAME = 'admin';
@@ -47,6 +52,10 @@ const MOCK_DATA: Message[] = [
 
 const Room = ({}: RoomProps) => {
   const listRef = useRef<FlatList>(null);
+  const keyboardBehavior = useMemo(
+    () => (Platform.OS === 'ios' ? 'padding' : 'height'),
+    [],
+  );
 
   const userUsername = MOCK_USER_USERNAME;
 
@@ -70,17 +79,19 @@ const Room = ({}: RoomProps) => {
 
   return (
     <ScreenContainer hasNavigationPadding>
-      <Content>
-        <FlatList<Message>
-          ref={listRef}
-          data={MOCK_DATA}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => `${item.author}-message-${index}`}
-          showsVerticalScrollIndicator={false}
-          onLayout={handleLayout}
-        />
-      </Content>
-      <MessageInput />
+      <KeyboardAvoidingContainer behavior={keyboardBehavior}>
+        <Content>
+          <FlatList<Message>
+            ref={listRef}
+            data={MOCK_DATA}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => `${item.author}-message-${index}`}
+            showsVerticalScrollIndicator={false}
+            onLayout={handleLayout}
+          />
+        </Content>
+        <MessageInput />
+      </KeyboardAvoidingContainer>
     </ScreenContainer>
   );
 };

@@ -23,19 +23,19 @@ const theme: DefaultTheme = {
       fontFamily: FONT_FAMILY,
       fontStyle: 'normal',
       fontSize: 32,
-      lineHeight: 40,
+      lineHeight: 32,
     },
     headingS: {
       fontFamily: FONT_FAMILY,
       fontStyle: 'normal',
       fontSize: 20,
-      lineHeight: 24,
+      lineHeight: 20,
     },
     body: {
       fontFamily: FONT_FAMILY,
       fontStyle: 'normal',
       fontSize: 16,
-      lineHeight: 20,
+      lineHeight: 16,
     },
   },
 };

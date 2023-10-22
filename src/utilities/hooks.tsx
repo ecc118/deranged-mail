@@ -1,15 +1,16 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useMemo} from 'react';
 import {Keyboard} from 'react-native';
 
 export const useKeyboard = () => {
-  const [visible, setVisible] = useState<boolean>(false);
+  const [height, setHeight] = useState<number>(0);
+  const visible = useMemo(() => !!height, [height]);
 
   useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      setVisible(true);
+    const showSubscription = Keyboard.addListener('keyboardDidShow', e => {
+      setHeight(e.endCoordinates.height);
     });
     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      setVisible(false);
+      setHeight(0);
     });
     return () => {
       showSubscription.remove();
@@ -17,5 +18,5 @@ export const useKeyboard = () => {
     };
   }, []);
 
-  return visible;
+  return {visible, height};
 };

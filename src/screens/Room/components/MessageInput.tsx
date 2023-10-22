@@ -22,11 +22,17 @@ const MessageContainer = styled.View`
 const InputContainer = styled.View`
   flex: 1;
   margin-left: 8px;
+  background: red;
 `;
 
 const SendButton = styled.TouchableOpacity`
   background-color: ${({theme}) => theme.colors.accent};
   padding: 12px;
+`;
+
+const InputStyled = styled(Input)`
+  flex: 1;
+  flex-grow: 1;
 `;
 
 const MessageInput = () => {
@@ -35,7 +41,7 @@ const MessageInput = () => {
       <MessageContainer>
         <TypeIcon />
         <InputContainer>
-          <Input />
+          <InputStyled />
         </InputContainer>
         <SendButton>
           <SendIcon />
