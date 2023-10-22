@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import styled from 'styled-components/native';
 
 import {RootStackScreenProps} from '@/types/navigation';
 
 import Text from '@/components/Text';
 import ScreenContainer from '@/components/ScreenContainer';
+import {AuthContext} from '@/components/AuthContextProvider';
 
 import Form from './components/Form';
 
@@ -18,9 +19,10 @@ const Content = styled.View`
   margin: -40px 20px 0 20px;
 `;
 
-const Login = ({navigation}: LoginProps) => {
-  const handleEnter = () => {
-    navigation.navigate('Home');
+const Login = ({}: LoginProps) => {
+  const {onSignIn} = useContext(AuthContext);
+  const handleEnter = async (username: string) => {
+    onSignIn?.(username);
   };
 
   return (

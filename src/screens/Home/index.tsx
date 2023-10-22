@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import styled from 'styled-components/native';
 
 import {RootStackScreenProps} from '@/types/navigation';
 
 import ScreenContainer from '@/components/ScreenContainer';
+import {AuthContext} from '@/components/AuthContextProvider';
 
 import User from './components/User';
 import Header from './components/Header';
@@ -15,6 +16,7 @@ const Content = styled.View`
 `;
 
 const Home = ({navigation}: HomeProps) => {
+  const {} = useContext(AuthContext);
   const handleNavigateChatRoom = () => {
     navigation.navigate('Room');
   };

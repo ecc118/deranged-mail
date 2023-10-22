@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useRef, useContext} from 'react';
 import {
   NavigationContainer,
   NavigationContainerRef,
@@ -12,8 +12,10 @@ import styled from 'styled-components/native';
 import Login from '@/screens/Login';
 import Home from '@/screens/Home';
 import Room from '@/screens/Room';
-import BackButton from '@/components/HeaderBack';
 import theme, {FONT_FAMILY} from '@/utilities/theme';
+import BackButton from '@/components/HeaderBack';
+import {AuthContext} from '@/components/AuthContextProvider';
+import Loading from '@/components/Loading';
 
 import {RootStackParamList} from '@/types/navigation';
 
@@ -36,27 +38,37 @@ const Container = styled.View`
 
 const Navigation = ({}: NavigationProps) => {
   const navigation = useRef<NavigationContainerRef<RootStackParamList>>(null);
+  const {currentUser, initializing} = useContext(AuthContext);
+
+  if (initializing) {
+    return <Loading />;
+  }
 
   return (
     <Container>
       <NavigationContainer ref={navigation}>
-        <RootStack.Navigator>
-          <RootStack.Screen
-            name="Login"
-            component={Login}
-            options={{headerShown: false}}
-          />
-          <RootStack.Screen
-            name="Home"
-            component={Home}
-            options={{headerShown: false}}
-          />
-          <RootStack.Screen
-            name="Room"
-            component={Room}
-            options={{headerLeft: () => <BackButton />, ...HEADER}}
-          />
-        </RootStack.Navigator>
+        {currentUser ? (
+          <RootStack.Navigator>
+            <RootStack.Screen
+              name="Home"
+              component={Home}
+              options={{headerShown: false}}
+            />
+            <RootStack.Screen
+              name="Room"
+              component={Room}
+              options={{headerLeft: () => <BackButton />, ...HEADER}}
+            />
+          </RootStack.Navigator>
+        ) : (
+          <RootStack.Navigator>
+            <RootStack.Screen
+              name="Login"
+              component={Login}
+              options={{headerShown: false}}
+            />
+          </RootStack.Navigator>
+        )}
       </NavigationContainer>
     </Container>
   );

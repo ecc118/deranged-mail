@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import styled from 'styled-components/native';
 
 import Text from '@/components/Text';
@@ -8,7 +8,7 @@ import Button from '@/components/Button';
 import LoginIcon from '@/assets/icons/login.svg';
 
 interface FormProps {
-  onPress: () => void;
+  onPress: (username: string) => void;
 }
 
 const Container = styled.View`
@@ -27,11 +27,17 @@ const EnterButton = styled(Button)`
 `;
 
 const Form = ({onPress}: FormProps) => {
+  const [username, setUsername] = useState<string>('');
+
+  const handleEnter = () => {
+    onPress(username);
+  };
+
   return (
     <Container>
       <Label>username</Label>
-      <TextInput />
-      <EnterButton onPress={onPress}>
+      <TextInput value={username} onChangeText={setUsername} />
+      <EnterButton onPress={handleEnter} disabled={!username}>
         <LoginIcon />
       </EnterButton>
     </Container>
