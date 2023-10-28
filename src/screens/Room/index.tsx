@@ -11,9 +11,13 @@ import {ListRenderItem, FlatList} from 'react-native';
 import styled from 'styled-components/native';
 import firestore from '@react-native-firebase/firestore';
 import {DateTime} from 'luxon';
+import 'react-native-get-random-values';
+import {v4 as uuidv4} from 'uuid';
 
 import {RootStackScreenProps} from '@/types/navigation';
+import {Message as MessageType} from '@/types';
 
+import {getMiddleMessage} from '@/utilities/functions';
 import ScreenContainer from '@/components/ScreenContainer';
 import {AuthContext} from '@/components/AuthContextProvider';
 
@@ -22,12 +26,6 @@ import MessageInput from './components/MessageInput';
 import Header from './components/Header';
 
 type RoomProps = RootStackScreenProps<'Room'>;
-
-interface MessageType {
-  author: string;
-  body: string;
-  time: string;
-}
 
 const Content = styled.View`
   flex: 1;
@@ -60,10 +58,11 @@ const Room = ({route}: RoomProps) => {
     handleScrollToEnd();
   };
 
-  const renderItem: ListRenderItem<MessageType> = ({item}) => {
+  const renderItem: ListRenderItem<MessageType> = ({item, index}) => {
     const color = item.author === currentUser?.username ? 'onyx' : 'black';
     const authorAlign =
       item.author === currentUser?.username ? 'right' : 'left';
+    const noFooter = getMiddleMessage(item, messages, index);
 
     return (
       <Message
@@ -72,6 +71,7 @@ const Room = ({route}: RoomProps) => {
         color={color}
         authorAlign={authorAlign}
         date={item.time}
+        noFooter={noFooter}
       />
     );
   };
@@ -123,11 +123,14 @@ const Room = ({route}: RoomProps) => {
     }
 
     try {
+      const messageId = uuidv4();
+
       await firestore()
         .collection('rooms')
         .doc(roomId)
         .update({
           messages: firestore.FieldValue.arrayUnion({
+            id: messageId,
             time: DateTime.utc().toISO(),
             author: currentUser?.username,
             body,

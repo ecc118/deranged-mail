@@ -5,3 +5,9 @@ export interface User {
 }
 
 export type KnownUser = Pick<User, 'username' | 'uid'>;
+
+export interface Message {
+  author: string;
+  body: string;
+  time: string;
+}
