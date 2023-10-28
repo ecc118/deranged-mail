@@ -19,18 +19,19 @@ import {AuthContext} from '@/components/AuthContextProvider';
 
 import Message from './components/Message';
 import MessageInput from './components/MessageInput';
+import Header from './components/Header';
 
 type RoomProps = RootStackScreenProps<'Room'>;
 
 interface MessageType {
   author: string;
   body: string;
-  date: string;
+  time: string;
 }
 
 const Content = styled.View`
   flex: 1;
-  margin: 20px 20px 0 20px;
+  margin: 0 20px;
 `;
 
 const KeyboardAvoidingContainer = styled.KeyboardAvoidingView`
@@ -42,6 +43,7 @@ const Room = ({route}: RoomProps) => {
   const [roomId, setRoomId] = useState<string | undefined>(undefined);
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [initial, setInitial] = useState<boolean>(true);
+  const [participants, setParticipants] = useState<string[]>([]);
 
   const listRef = useRef<FlatList>(null);
   const keyboardBehavior = useMemo(
@@ -93,21 +95,22 @@ const Room = ({route}: RoomProps) => {
 
       if (data) {
         setRoomId(documentId);
+        setParticipants(data.participants);
         setLoading(false);
         return;
       }
 
-      await firestore()
-        .collection('rooms')
-        .doc(documentId)
-        .set({
-          participants: [
-            currentUser.username,
-            route.params.participant.username,
-          ],
-          messages: [],
-        });
+      const newParticipants = [
+        currentUser.username,
+        route.params.participant.username,
+      ];
+
+      await firestore().collection('rooms').doc(documentId).set({
+        participants: newParticipants,
+        messages: [],
+      });
       setRoomId(documentId);
+      setParticipants(newParticipants);
       setLoading(false);
     } catch (e) {
       console.log(e);
@@ -167,6 +170,7 @@ const Room = ({route}: RoomProps) => {
   return (
     <ScreenContainer hasNavigationPadding loading={loading || initial}>
       <KeyboardAvoidingContainer behavior={keyboardBehavior}>
+        <Header participants={participants} username={currentUser?.username} />
         <Content>
           <FlatList<MessageType>
             ref={listRef}
@@ -175,6 +179,7 @@ const Room = ({route}: RoomProps) => {
             keyExtractor={(item, index) => `${item.author}-message-${index}`}
             showsVerticalScrollIndicator={false}
             onLayout={handleLayout}
+            contentContainerStyle={{paddingTop: 20}}
           />
         </Content>
         <MessageInput
