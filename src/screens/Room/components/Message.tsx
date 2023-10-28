@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components/native';
+import {DateTime} from 'luxon';
 
 import {Color} from '@/utilities/theme';
 import Text from '@/components/Text';
@@ -9,6 +10,7 @@ interface MessageProps {
   body: string;
   author: string;
   authorAlign?: 'left' | 'right';
+  date: string;
 }
 
 const ContainerOuter = styled.View`
@@ -23,19 +25,27 @@ const Container = styled.View<{color: Color}>`
 `;
 
 const AuthorContainer = styled.View<Pick<MessageProps, 'authorAlign'>>`
+  flex-direction: row;
   background-color: ${({theme}) => theme.colors.accent};
   align-self: ${({authorAlign}) =>
     authorAlign === 'left' ? 'flex-start' : 'flex-end'};
 `;
 
-const Message = ({color, body, author, authorAlign}: MessageProps) => {
+const BodyText = styled(Text).attrs({color: 'main'})`
+  line-height: 18px;
+`;
+
+const Message = ({color, body, author, authorAlign, date}: MessageProps) => {
+  const time = DateTime.fromISO(date).toFormat('HH:mm');
+
   return (
     <ContainerOuter>
       <Container color={color}>
-        <Text color="main">{body}</Text>
+        <BodyText>{body}</BodyText>
       </Container>
       <AuthorContainer authorAlign={authorAlign}>
-        <Text>{author}</Text>
+        <Text color="gray">{author} </Text>
+        <Text>{time}</Text>
       </AuthorContainer>
     </ContainerOuter>
   );

@@ -1,20 +1,31 @@
-import React, {useRef, useMemo} from 'react';
+import React, {
+  useRef,
+  useMemo,
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+} from 'react';
 import {Platform} from 'react-native';
 import {ListRenderItem, FlatList} from 'react-native';
 import styled from 'styled-components/native';
+import firestore from '@react-native-firebase/firestore';
+import {DateTime} from 'luxon';
 
 import {RootStackScreenProps} from '@/types/navigation';
 
 import ScreenContainer from '@/components/ScreenContainer';
+import {AuthContext} from '@/components/AuthContextProvider';
 
 import Message from './components/Message';
 import MessageInput from './components/MessageInput';
 
 type RoomProps = RootStackScreenProps<'Room'>;
 
-interface Message {
+interface MessageType {
   author: string;
   body: string;
+  date: string;
 }
 
 const Content = styled.View`
@@ -26,46 +37,31 @@ const KeyboardAvoidingContainer = styled.KeyboardAvoidingView`
   flex: 1;
 `;
 
-const MOCK_USER_USERNAME = 'admin';
-const MOCK_DATA: Message[] = [
-  {
-    author: 'bidalaga',
-    body: 'Dinosaurs are varied from taxonomic, morphological and ecological standpoints. Birds, at over 10,700 living species, are among the most diverse groups of vertebrates.',
-  },
-  {
-    author: MOCK_USER_USERNAME,
-    body: 'Dinosaurs are represented on every continent by both extant species (birds) and fossil remains. Through the first half of the 20th century, before birds were recognized as dinosaurs, most of the scientific community believed dinosaurs to have been sluggish and cold-blooded.',
-  },
-  {
-    author: 'bidalaga',
-    body: 'The first dinosaur fossils were recognized in the early 19th century, with the name "dinosaur" (meaning "terrible lizard") being coined by Sir Richard Owen in 1842 to refer to these "great fossil lizards".',
-  },
-  {
-    author: 'bidalaga',
-    body: 'The first dinosaur fossils were recognized in the early 19th century, with the name "dinosaur" (meaning "terrible lizard") being coined by Sir Richard Owen in 1842 to refer to these "great fossil lizards".',
-  },
-  {
-    author: 'bidalaga',
-    body: 'The first dinosaur fossils were recognized in the early 19th century, with the name "dinosaur" (meaning "terrible lizard") being coined by Sir Richard Owen in 1842 to refer to these "great fossil lizards".',
-  },
-];
+const Room = ({route}: RoomProps) => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [roomId, setRoomId] = useState<string | undefined>(undefined);
+  const [messages, setMessages] = useState<MessageType[]>([]);
+  const [initial, setInitial] = useState<boolean>(true);
 
-const Room = ({}: RoomProps) => {
   const listRef = useRef<FlatList>(null);
   const keyboardBehavior = useMemo(
     () => (Platform.OS === 'ios' ? 'padding' : 'height'),
     [],
   );
+  const {currentUser} = useContext(AuthContext);
 
-  const userUsername = MOCK_USER_USERNAME;
-
-  const handleLayout = () => {
+  const handleScrollToEnd = () => {
     listRef?.current?.scrollToEnd({animated: false});
   };
 
-  const renderItem: ListRenderItem<Message> = ({item}) => {
-    const color = item.author === userUsername ? 'onyx' : 'black';
-    const authorAlign = item.author === userUsername ? 'right' : 'left';
+  const handleLayout = () => {
+    handleScrollToEnd();
+  };
+
+  const renderItem: ListRenderItem<MessageType> = ({item}) => {
+    const color = item.author === currentUser?.username ? 'onyx' : 'black';
+    const authorAlign =
+      item.author === currentUser?.username ? 'right' : 'left';
 
     return (
       <Message
@@ -73,24 +69,118 @@ const Room = ({}: RoomProps) => {
         author={item.author}
         color={color}
         authorAlign={authorAlign}
+        date={item.time}
       />
     );
   };
 
+  const handleRoomInit = useCallback(async () => {
+    if (!currentUser) {
+      return;
+    }
+
+    const documentId =
+      currentUser.uid > route.params.participant.uid
+        ? currentUser?.uid + route.params.participant.uid
+        : route.params.participant.uid + currentUser?.uid;
+
+    try {
+      const snapshot = await firestore()
+        .collection('rooms')
+        .doc(documentId)
+        .get();
+      const data = snapshot.data();
+
+      if (data) {
+        setRoomId(documentId);
+        setLoading(false);
+        return;
+      }
+
+      await firestore()
+        .collection('rooms')
+        .doc(documentId)
+        .set({
+          participants: [
+            currentUser.username,
+            route.params.participant.username,
+          ],
+          messages: [],
+        });
+      setRoomId(documentId);
+      setLoading(false);
+    } catch (e) {
+      console.log(e);
+    }
+  }, [currentUser, route.params.participant]);
+
+  const handleMessageSend = async (body: string) => {
+    if (!roomId) {
+      return;
+    }
+
+    try {
+      await firestore()
+        .collection('rooms')
+        .doc(roomId)
+        .update({
+          messages: firestore.FieldValue.arrayUnion({
+            time: DateTime.utc().toISO(),
+            author: currentUser?.username,
+            body,
+          }),
+        });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    if (!loading) {
+      return;
+    }
+
+    handleRoomInit();
+  }, [handleRoomInit, loading]);
+
+  useEffect(() => {
+    if (!roomId) {
+      return;
+    }
+    const subscriber = firestore()
+      .collection('rooms')
+      .doc(roomId)
+      .onSnapshot(documentSnapshot => {
+        setInitial(false);
+        const data = documentSnapshot.data();
+        if (!data) {
+          return;
+        }
+        setMessages(data.messages);
+      });
+
+    return () => {
+      subscriber();
+    };
+  }, [roomId]);
+
   return (
-    <ScreenContainer hasNavigationPadding>
+    <ScreenContainer hasNavigationPadding loading={loading || initial}>
       <KeyboardAvoidingContainer behavior={keyboardBehavior}>
         <Content>
-          <FlatList<Message>
+          <FlatList<MessageType>
             ref={listRef}
-            data={MOCK_DATA}
+            data={messages}
             renderItem={renderItem}
             keyExtractor={(item, index) => `${item.author}-message-${index}`}
             showsVerticalScrollIndicator={false}
             onLayout={handleLayout}
           />
         </Content>
-        <MessageInput />
+        <MessageInput
+          onPress={handleMessageSend}
+          onScrollToEnd={handleScrollToEnd}
+        />
       </KeyboardAvoidingContainer>
     </ScreenContainer>
   );

@@ -18,8 +18,8 @@ const Content = styled.ScrollView`
 
 const Home = ({navigation}: HomeProps) => {
   const {currentUser} = useContext(AuthContext);
-  const handleNavigateChatRoom = () => {
-    navigation.navigate('Room');
+  const handleNavigateChatRoom = (knownUser: KnownUser) => {
+    navigation.navigate('Room', {participant: knownUser});
   };
 
   const renderKnownUsers = (item: KnownUser) => {
@@ -27,7 +27,7 @@ const Home = ({navigation}: HomeProps) => {
       <User
         key={item.uid}
         name={item.username}
-        onPress={handleNavigateChatRoom}
+        onPress={() => handleNavigateChatRoom(item)}
       />
     );
   };

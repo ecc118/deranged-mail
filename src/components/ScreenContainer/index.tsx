@@ -3,8 +3,11 @@ import {ViewProps} from 'react-native';
 import styled from 'styled-components/native';
 import {useHeaderHeight} from '@react-navigation/elements';
 
+import Loading from '@/components/Loading';
+
 interface ScreenContainerProps {
   hasNavigationPadding?: boolean;
+  loading?: boolean;
 }
 
 const Container = styled.SafeAreaView<{height: number}>`
@@ -15,11 +18,17 @@ const Container = styled.SafeAreaView<{height: number}>`
 
 const ScreenContainer = ({
   hasNavigationPadding,
+  children,
+  loading,
   ...props
 }: ScreenContainerProps & ViewProps) => {
   const headerHeight = useHeaderHeight();
   const height = hasNavigationPadding ? headerHeight : 0;
-  return <Container {...props} height={height} />;
+  const ChildrenWithLoading = loading ? <Loading /> : children;
+
+  return (
+    <Container {...props} height={height} children={ChildrenWithLoading} />
+  );
 };
 
 export default ScreenContainer;

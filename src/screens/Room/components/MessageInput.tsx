@@ -1,9 +1,14 @@
-import React from 'react';
+import React, {useState} from 'react';
 import styled from 'styled-components/native';
 
 import Input from '@/components/TextInput';
 import TypeIcon from '@/assets/icons/type.svg';
 import SendIcon from '@/assets/icons/send.svg';
+
+interface MessageInputProps {
+  onPress: (body: string) => Promise<void>;
+  onScrollToEnd: () => void;
+}
 
 const Container = styled.View`
   border-top-width: 3px;
@@ -35,15 +40,24 @@ const InputStyled = styled(Input)`
   flex-grow: 1;
 `;
 
-const MessageInput = () => {
+const MessageInput = ({onPress, onScrollToEnd}: MessageInputProps) => {
+  const [messageBody, setMessageBody] = useState<string>('');
+  const sendDisabled = !messageBody;
+
+  const handleSend = async () => {
+    await onPress(messageBody);
+    onScrollToEnd();
+    setMessageBody('');
+  };
+
   return (
     <Container>
       <MessageContainer>
         <TypeIcon />
         <InputContainer>
-          <InputStyled />
+          <InputStyled value={messageBody} onChangeText={setMessageBody} />
         </InputContainer>
-        <SendButton>
+        <SendButton onPress={handleSend} disabled={sendDisabled}>
           <SendIcon />
         </SendButton>
       </MessageContainer>

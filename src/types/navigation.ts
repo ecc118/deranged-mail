@@ -1,9 +1,11 @@
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 
+import {KnownUser} from '@/types';
+
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
-  Room: undefined;
+  Room: {participant: KnownUser};
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
