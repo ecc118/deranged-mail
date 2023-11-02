@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {useMemo} from 'react';
+import {Dimensions} from 'react-native';
 import styled from 'styled-components/native';
 import {DateTime} from 'luxon';
 
 import {Message} from '@/types';
+import {getScaledImageMeasurements} from '@/utilities/functions';
 import Modal, {ModalProps} from '@/components/Modal';
 import Text from '@/components/Text';
 
@@ -22,7 +24,7 @@ const Container = styled.View`
 
 const MessageContainer = styled.View`
   background-color: ${({theme}) => theme.colors.black};
-  padding: 20px 10px;
+  padding: 10px;
 `;
 
 const Heading = styled.Text`
@@ -42,20 +44,65 @@ const ActionContainer = styled.View`
   justify-content: flex-end;
 `;
 
+const AssetContainer = styled.View`
+  align-items: center;
+  border-bottom-width: 3px;
+  border-color: ${({theme}) => theme.colors.accent};
+`;
+
+const AssetImage = styled.Image``;
+
 const MessageModal = ({
   message,
   onReply,
   onClose,
   ...props
 }: MessageModalProps) => {
+  const assetInfo = useMemo(
+    () =>
+      !message?.asset
+        ? null
+        : {
+            ...getScaledImageMeasurements({
+              height: Dimensions.get('screen').height * 0.55,
+              defaultWidth: message.asset.width,
+              defaultHeight: message.asset.height,
+              horizontalInset: 20 * 2 + 3 * 2,
+            }),
+            uri: message.asset.url,
+          },
+    [message?.asset],
+  );
   const time = message?.time
     ? DateTime.fromISO(message.time).toFormat('HH:mm yyyy.MM.dd')
     : null;
+
+  const Asset = assetInfo ? (
+    <AssetContainer>
+      <AssetImage
+        source={{uri: assetInfo.uri}}
+        height={assetInfo.height}
+        width={assetInfo.width}
+      />
+    </AssetContainer>
+  ) : null;
+
+  const MessageBody = message?.body ? (
+    <MessageContainer>
+      <Text color="main">{message?.body}</Text>
+    </MessageContainer>
+  ) : null;
 
   const handleReplyPress = () => {
     onReply?.(message);
     onClose?.();
   };
+
+  const ReplyButton = message?.body ? (
+    <Button onPress={handleReplyPress}>
+      <ReplyIcon />
+    </Button>
+  ) : null;
 
   return (
     <Modal {...props} onClose={onClose}>
@@ -64,16 +111,13 @@ const MessageModal = ({
           <Text>{message?.author} </Text>
           <Text color="gray">{time}</Text>
         </Heading>
-        <MessageContainer>
-          <Text color="main">{message?.body}</Text>
-        </MessageContainer>
+        {Asset}
+        {MessageBody}
         <ActionContainer>
           <Button>
             <CopyIcon />
           </Button>
-          <Button onPress={handleReplyPress}>
-            <ReplyIcon />
-          </Button>
+          {ReplyButton}
         </ActionContainer>
       </Container>
     </Modal>

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {TouchableOpacityProps} from 'react-native';
 import styled from 'styled-components/native';
 import {DateTime} from 'luxon';
 
-import {RepliedTo} from '@/types';
+import {RepliedTo, Asset} from '@/types';
 import {Color} from '@/utilities/theme';
+import {getScaledImageMeasurements} from '@/utilities/functions';
 import Text from '@/components/Text';
 
 interface MessageProps extends TouchableOpacityProps {
@@ -15,6 +16,7 @@ interface MessageProps extends TouchableOpacityProps {
   date: string;
   repliedTo?: RepliedTo;
   noFooter?: boolean;
+  asset?: Asset;
 }
 
 const ContainerOuter = styled.View<Pick<MessageProps, 'noFooter'>>`
@@ -27,8 +29,11 @@ const Container = styled.TouchableOpacity<
   border-width: 3px;
   border-bottom-width: ${({noFooter}) => (noFooter ? 0 : 3)}px;
   border-color: ${({theme}) => theme.colors.accent};
-  padding: 10px;
   background-color: ${({theme, color}) => theme.colors[color]};
+`;
+
+const MessageContainer = styled.View`
+  padding: 10px;
 `;
 
 const AuthorContainer = styled.View<Pick<MessageProps, 'authorAlign'>>`
@@ -49,6 +54,15 @@ const RepliedContainer = styled.View`
   margin-bottom: 5px;
 `;
 
+const AssetContainer = styled.View`
+  align-items: center;
+  border-bottom-width: 3px;
+  border-color: ${({theme}) => theme.colors.accent};
+  margin-bottom: -3px;
+`;
+
+const AssetImage = styled.Image``;
+
 const Message = ({
   color,
   body,
@@ -58,7 +72,23 @@ const Message = ({
   repliedTo,
   noFooter,
   onPress,
+  asset,
 }: MessageProps) => {
+  const assetInfo = useMemo(
+    () =>
+      !asset
+        ? null
+        : {
+            ...getScaledImageMeasurements({
+              height: 200,
+              defaultWidth: asset?.width,
+              defaultHeight: asset?.height,
+              horizontalInset: 20 * 2 + 3 * 2,
+            }),
+            uri: asset.url,
+          },
+    [asset],
+  );
   const time = DateTime.fromISO(date).toFormat('HH:mm');
   const Footer = !noFooter && (
     <AuthorContainer authorAlign={authorAlign}>
@@ -73,12 +103,27 @@ const Message = ({
       <BodyText color="ebony">{repliedTo.body}</BodyText>
     </RepliedContainer>
   ) : null;
+  const AssetComponent = assetInfo ? (
+    <AssetContainer>
+      <AssetImage
+        source={{uri: assetInfo.uri}}
+        width={assetInfo.width}
+        height={assetInfo.height}
+      />
+    </AssetContainer>
+  ) : null;
+  const MessageBody = body ? (
+    <MessageContainer>
+      {RepliedToComponent}
+      <BodyText color="main">{body}</BodyText>
+    </MessageContainer>
+  ) : null;
 
   return (
     <ContainerOuter noFooter={noFooter}>
       <Container color={color} noFooter={noFooter} onPress={onPress}>
-        {RepliedToComponent}
-        <BodyText color="main">{body}</BodyText>
+        {AssetComponent}
+        {MessageBody}
       </Container>
       {Footer}
     </ContainerOuter>

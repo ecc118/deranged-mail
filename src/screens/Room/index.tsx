@@ -17,7 +17,11 @@ import {v4 as uuidv4} from 'uuid';
 import {RootStackScreenProps} from '@/types/navigation';
 import {Message as MessageType} from '@/types';
 
-import {useModal, useMessagesPagination} from '@/utilities/hooks';
+import {
+  useModal,
+  useMessagesPagination,
+  useMediaUpload,
+} from '@/utilities/hooks';
 import ScreenContainer from '@/components/ScreenContainer';
 import {AuthContext} from '@/components/AuthContextProvider';
 
@@ -25,6 +29,7 @@ import Message from './components/Message';
 import MessageInput from './components/MessageInput';
 import Header from './components/Header';
 import MessageModal from './components/MessageModal';
+import HeaderRight from './components/HeaderRight';
 
 type RoomProps = RootStackScreenProps<'Room'>;
 
@@ -37,7 +42,7 @@ const KeyboardAvoidingContainer = styled.KeyboardAvoidingView`
   flex: 1;
 `;
 
-const Room = ({route}: RoomProps) => {
+const Room = ({route, navigation}: RoomProps) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [roomId, setRoomId] = useState<string | undefined>(undefined);
   const [messages, setMessages] = useState<MessageType[]>([]);
@@ -49,7 +54,11 @@ const Room = ({route}: RoomProps) => {
   const [replyMessage, setReplyMessage] = useState<MessageType | undefined>(
     undefined,
   );
-  const {data, onInitial, onEndReached} = useMessagesPagination(messages);
+  const {
+    data: messagesData,
+    onInitial,
+    onEndReached,
+  } = useMessagesPagination(messages);
 
   const listRef = useRef<FlatList>(null);
   const keyboardBehavior = useMemo(
@@ -58,6 +67,8 @@ const Room = ({route}: RoomProps) => {
   );
   const {currentUser} = useContext(AuthContext);
   const {modalVisible, onModalOpen, onModalClose} = useModal();
+  const {onMediaPickerOpen, onAssetDismiss, onAssetUpload, selectedAsset} =
+    useMediaUpload(roomId);
 
   const handleScrollToEnd = () => {
     listRef?.current?.scrollToIndex({index: 0, animated: false});
@@ -82,6 +93,7 @@ const Room = ({route}: RoomProps) => {
         date={item.time}
         repliedTo={item.repliedTo}
         onPress={() => handleMessagePress(item)}
+        asset={item.asset}
       />
     );
   };
@@ -132,9 +144,10 @@ const Room = ({route}: RoomProps) => {
       return;
     }
 
+    const asset = await onAssetUpload();
+
     try {
       const messageId = uuidv4();
-
       await firestore()
         .collection('rooms')
         .doc(roomId)
@@ -152,16 +165,36 @@ const Room = ({route}: RoomProps) => {
                   },
                 }
               : {}),
+            ...(asset
+              ? {
+                  asset: {
+                    url: asset.url,
+                    type: asset?.type,
+                    width: asset.width,
+                    height: asset.height,
+                  },
+                }
+              : {}),
           }),
         });
     } catch (e) {
       console.log(e);
     }
-    if (!replyMessage) {
-      return;
+    if (replyMessage) {
+      setReplyMessage(undefined);
     }
-    setReplyMessage(undefined);
+    if (selectedAsset) {
+      onAssetDismiss();
+    }
   };
+
+  useEffect(() => {
+    const headerRight = () => <HeaderRight onPress={onMediaPickerOpen} />;
+
+    navigation.setOptions({
+      headerRight,
+    });
+  }, [navigation, onMediaPickerOpen]);
 
   useEffect(() => {
     if (!loading) {
@@ -204,7 +237,7 @@ const Room = ({route}: RoomProps) => {
         <Content>
           <FlatList<MessageType>
             ref={listRef}
-            data={data}
+            data={messagesData}
             renderItem={renderItem}
             keyExtractor={(item, index) => `${item.author}-message-${index}`}
             showsVerticalScrollIndicator={false}
@@ -218,6 +251,8 @@ const Room = ({route}: RoomProps) => {
           onScrollToEnd={handleScrollToEnd}
           replyMessage={replyMessage}
           onReplyDismiss={handleReplyDismiss}
+          selectedAsset={selectedAsset}
+          onAssetDismiss={onAssetDismiss}
         />
       </KeyboardAvoidingContainer>
       <MessageModal

@@ -1,7 +1,11 @@
 import {useEffect, useState, useMemo, useRef, useCallback} from 'react';
 import {Keyboard} from 'react-native';
+import {launchImageLibrary, Asset} from 'react-native-image-picker';
+import 'react-native-get-random-values';
+import {v4 as uuidv4} from 'uuid';
+import storage from '@react-native-firebase/storage';
 
-import {Message} from '@/types';
+import {Message, Asset as MessageAsset} from '@/types';
 import {MESSAGES_LIMIT} from '@/utilities/constants';
 
 export const useKeyboard = () => {
@@ -92,5 +96,61 @@ export const useMessagesPagination = (messages: Message[]) => {
     data,
     onInitial: handleInitial,
     onEndReached: handleEndReached,
+  };
+};
+
+export const useMediaUpload = (roomId?: string) => {
+  const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(
+    undefined,
+  );
+
+  const handlePickerOpen = useCallback(async () => {
+    try {
+      const result = await launchImageLibrary({mediaType: 'mixed'});
+      if (result.didCancel) {
+        return;
+      }
+      const asset = result.assets?.[0];
+      if (!asset) {
+        return;
+      }
+      setSelectedAsset(asset);
+    } catch (e) {
+      console.log(e);
+    }
+  }, []);
+
+  const handleAssetDismiss = () => {
+    setSelectedAsset(undefined);
+  };
+
+  const handleUpload: () => Promise<MessageAsset | null> = async () => {
+    if (!selectedAsset?.uri || !roomId) {
+      return null;
+    }
+    try {
+      const fileName = uuidv4();
+      const reference = storage().ref(`/rooms/${roomId}/${fileName}`);
+      const task = reference.putFile(selectedAsset.uri);
+
+      await task;
+      const downloadUrl = await reference.getDownloadURL();
+      return {
+        url: downloadUrl,
+        type: selectedAsset.type,
+        width: selectedAsset.width,
+        height: selectedAsset.height,
+      };
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+
+  return {
+    onMediaPickerOpen: handlePickerOpen,
+    onAssetDismiss: handleAssetDismiss,
+    onAssetUpload: handleUpload,
+    selectedAsset,
   };
 };

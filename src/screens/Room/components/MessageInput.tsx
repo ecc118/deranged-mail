@@ -1,19 +1,24 @@
 import React, {useState} from 'react';
 import styled from 'styled-components/native';
+import {Asset} from 'react-native-image-picker';
 
 import {Message} from '@/types';
 import Input from '@/components/TextInput';
 import Text from '@/components/Text';
 
+import SelectedMedia from './SelectedMedia';
+import DismissButton from './DismissButton';
+
 import TypeIcon from '@/assets/icons/type.svg';
 import SendIcon from '@/assets/icons/send.svg';
-import ScrapReply from '@/assets/icons/scrap-it.svg';
 
 interface MessageInputProps {
   onPress: (body: string) => Promise<void>;
   onScrollToEnd: () => void;
   replyMessage?: Message;
   onReplyDismiss?: () => void;
+  selectedAsset?: Asset;
+  onAssetDismiss?: () => void;
 }
 
 const Container = styled.View`
@@ -59,32 +64,25 @@ const ReplyText = styled(Text).attrs({numberOfLines: 1, color: 'gray'})`
   line-height: 18px;
 `;
 
-const ScrapButton = styled.TouchableOpacity.attrs({
-  hitSlop: {
-    top: 5,
-    right: 10,
-    bottom: 5,
-    left: 10,
-  },
-})`
-  margin-right: 10px;
-`;
-
 const MessageInput = ({
   onPress,
   onScrollToEnd,
   replyMessage,
   onReplyDismiss,
+  selectedAsset,
+  onAssetDismiss,
 }: MessageInputProps) => {
   const [messageBody, setMessageBody] = useState<string>('');
-  const sendDisabled = !messageBody;
+  const sendDisabled = !messageBody && !selectedAsset;
+
   const ReplyMesage = replyMessage ? (
     <ReplyContainer>
-      <ScrapButton onPress={onReplyDismiss}>
-        <ScrapReply />
-      </ScrapButton>
+      <DismissButton onPress={onReplyDismiss} />
       <ReplyText>{replyMessage.body}</ReplyText>
     </ReplyContainer>
+  ) : null;
+  const SelectedAsset = selectedAsset ? (
+    <SelectedMedia asset={selectedAsset} onAssetDismiss={onAssetDismiss} />
   ) : null;
 
   const handleSend = async () => {
@@ -95,6 +93,7 @@ const MessageInput = ({
 
   return (
     <Container>
+      {SelectedAsset}
       {ReplyMesage}
       <MessageContainer>
         <TypeIcon />
