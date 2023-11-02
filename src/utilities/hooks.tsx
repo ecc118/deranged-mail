@@ -20,3 +20,21 @@ export const useKeyboard = () => {
 
   return {visible, height};
 };
+
+export const useModal = () => {
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+  const handleModalOpen = () => {
+    setModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
+
+  return {
+    modalVisible,
+    onModalOpen: handleModalOpen,
+    onModalClose: handleModalClose,
+  };
+};

@@ -18,12 +18,14 @@ import {RootStackScreenProps} from '@/types/navigation';
 import {Message as MessageType} from '@/types';
 
 import {getMiddleMessage} from '@/utilities/functions';
+import {useModal} from '@/utilities/hooks';
 import ScreenContainer from '@/components/ScreenContainer';
 import {AuthContext} from '@/components/AuthContextProvider';
 
 import Message from './components/Message';
 import MessageInput from './components/MessageInput';
 import Header from './components/Header';
+import MessageModal from './components/MessageModal';
 
 type RoomProps = RootStackScreenProps<'Room'>;
 
@@ -42,6 +44,12 @@ const Room = ({route}: RoomProps) => {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [initial, setInitial] = useState<boolean>(true);
   const [participants, setParticipants] = useState<string[]>([]);
+  const [selectedMessage, setSelectedMessage] = useState<
+    MessageType | undefined
+  >(undefined);
+  const [replyMessage, setReplyMessage] = useState<MessageType | undefined>(
+    undefined,
+  );
 
   const listRef = useRef<FlatList>(null);
   const keyboardBehavior = useMemo(
@@ -49,6 +57,7 @@ const Room = ({route}: RoomProps) => {
     [],
   );
   const {currentUser} = useContext(AuthContext);
+  const {modalVisible, onModalOpen, onModalClose} = useModal();
 
   const handleScrollToEnd = () => {
     listRef?.current?.scrollToEnd({animated: false});
@@ -58,11 +67,18 @@ const Room = ({route}: RoomProps) => {
     handleScrollToEnd();
   };
 
+  const handleMessagePress = (message: MessageType) => {
+    setSelectedMessage(message);
+    onModalOpen();
+  };
+
   const renderItem: ListRenderItem<MessageType> = ({item, index}) => {
     const color = item.author === currentUser?.username ? 'onyx' : 'black';
     const authorAlign =
       item.author === currentUser?.username ? 'right' : 'left';
-    const noFooter = getMiddleMessage(item, messages, index);
+    const noFooter = item.repliedTo
+      ? false
+      : getMiddleMessage(item, messages, index);
 
     return (
       <Message
@@ -71,7 +87,9 @@ const Room = ({route}: RoomProps) => {
         color={color}
         authorAlign={authorAlign}
         date={item.time}
+        repliedTo={item.repliedTo}
         noFooter={noFooter}
+        onPress={() => handleMessagePress(item)}
       />
     );
   };
@@ -134,11 +152,23 @@ const Room = ({route}: RoomProps) => {
             time: DateTime.utc().toISO(),
             author: currentUser?.username,
             body,
+            ...(replyMessage
+              ? {
+                  repliedTo: {
+                    author: replyMessage.author,
+                    body: replyMessage.body,
+                  },
+                }
+              : {}),
           }),
         });
     } catch (e) {
       console.log(e);
     }
+    if (!replyMessage) {
+      return;
+    }
+    setReplyMessage(undefined);
   };
 
   useEffect(() => {
@@ -170,6 +200,10 @@ const Room = ({route}: RoomProps) => {
     };
   }, [roomId]);
 
+  const handleReplyDismiss = () => {
+    setReplyMessage(undefined);
+  };
+
   return (
     <ScreenContainer hasNavigationPadding loading={loading || initial}>
       <KeyboardAvoidingContainer behavior={keyboardBehavior}>
@@ -188,8 +222,16 @@ const Room = ({route}: RoomProps) => {
         <MessageInput
           onPress={handleMessageSend}
           onScrollToEnd={handleScrollToEnd}
+          replyMessage={replyMessage}
+          onReplyDismiss={handleReplyDismiss}
         />
       </KeyboardAvoidingContainer>
+      <MessageModal
+        visible={modalVisible}
+        message={selectedMessage}
+        onClose={onModalClose}
+        onReply={setReplyMessage}
+      />
     </ScreenContainer>
   );
 };
