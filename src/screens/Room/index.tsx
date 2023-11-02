@@ -17,8 +17,7 @@ import {v4 as uuidv4} from 'uuid';
 import {RootStackScreenProps} from '@/types/navigation';
 import {Message as MessageType} from '@/types';
 
-import {getMiddleMessage} from '@/utilities/functions';
-import {useModal} from '@/utilities/hooks';
+import {useModal, useMessagesPagination} from '@/utilities/hooks';
 import ScreenContainer from '@/components/ScreenContainer';
 import {AuthContext} from '@/components/AuthContextProvider';
 
@@ -50,6 +49,7 @@ const Room = ({route}: RoomProps) => {
   const [replyMessage, setReplyMessage] = useState<MessageType | undefined>(
     undefined,
   );
+  const {data, onInitial, onEndReached} = useMessagesPagination(messages);
 
   const listRef = useRef<FlatList>(null);
   const keyboardBehavior = useMemo(
@@ -60,11 +60,7 @@ const Room = ({route}: RoomProps) => {
   const {modalVisible, onModalOpen, onModalClose} = useModal();
 
   const handleScrollToEnd = () => {
-    listRef?.current?.scrollToEnd({animated: false});
-  };
-
-  const handleLayout = () => {
-    handleScrollToEnd();
+    listRef?.current?.scrollToIndex({index: 0, animated: false});
   };
 
   const handleMessagePress = (message: MessageType) => {
@@ -72,13 +68,10 @@ const Room = ({route}: RoomProps) => {
     onModalOpen();
   };
 
-  const renderItem: ListRenderItem<MessageType> = ({item, index}) => {
+  const renderItem: ListRenderItem<MessageType> = ({item}) => {
     const color = item.author === currentUser?.username ? 'onyx' : 'black';
     const authorAlign =
       item.author === currentUser?.username ? 'right' : 'left';
-    const noFooter = item.repliedTo
-      ? false
-      : getMiddleMessage(item, messages, index);
 
     return (
       <Message
@@ -88,7 +81,6 @@ const Room = ({route}: RoomProps) => {
         authorAlign={authorAlign}
         date={item.time}
         repliedTo={item.repliedTo}
-        noFooter={noFooter}
         onPress={() => handleMessagePress(item)}
       />
     );
@@ -192,13 +184,14 @@ const Room = ({route}: RoomProps) => {
         if (!data) {
           return;
         }
+        onInitial(data.messages);
         setMessages(data.messages);
       });
 
     return () => {
       subscriber();
     };
-  }, [roomId]);
+  }, [roomId, onInitial]);
 
   const handleReplyDismiss = () => {
     setReplyMessage(undefined);
@@ -211,12 +204,13 @@ const Room = ({route}: RoomProps) => {
         <Content>
           <FlatList<MessageType>
             ref={listRef}
-            data={messages}
+            data={data}
             renderItem={renderItem}
             keyExtractor={(item, index) => `${item.author}-message-${index}`}
             showsVerticalScrollIndicator={false}
-            onLayout={handleLayout}
-            contentContainerStyle={{paddingTop: 20}}
+            contentContainerStyle={{paddingBottom: 20}}
+            inverted
+            onEndReached={onEndReached}
           />
         </Content>
         <MessageInput
