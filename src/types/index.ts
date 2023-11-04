@@ -26,3 +26,9 @@ export interface Message {
   repliedTo?: RepliedTo;
   asset?: Asset;
 }
+
+export interface Progress {
+  process: string;
+  progress: number;
+  isLoading: boolean;
+}

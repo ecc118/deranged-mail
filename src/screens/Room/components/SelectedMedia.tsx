@@ -35,10 +35,6 @@ const FileName = styled(Text)`
 `;
 
 const SelectedMedia = ({asset, onAssetDismiss}: SelectedMediaProps) => {
-  const fileSize = asset?.fileSize
-    ? `${(asset.fileSize / 1000).toFixed(2)} KB`
-    : '0 B';
-
   return (
     <Container>
       <DismissButton onPress={onAssetDismiss} />
@@ -47,7 +43,6 @@ const SelectedMedia = ({asset, onAssetDismiss}: SelectedMediaProps) => {
         <FileName color="main" numberOfLines={1} ellipsizeMode="head">
           {asset?.fileName}
         </FileName>
-        <Text color="gray"> {fileSize}</Text>
       </InfoContainer>
     </Container>
   );

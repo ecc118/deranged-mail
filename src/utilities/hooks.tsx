@@ -5,8 +5,9 @@ import 'react-native-get-random-values';
 import {v4 as uuidv4} from 'uuid';
 import storage from '@react-native-firebase/storage';
 
-import {Message, Asset as MessageAsset} from '@/types';
+import {Message, Asset as MessageAsset, Progress} from '@/types';
 import {MESSAGES_LIMIT} from '@/utilities/constants';
+import {getCompressed} from '@/utilities/functions';
 
 export const useKeyboard = () => {
   const [height, setHeight] = useState<number>(0);
@@ -103,6 +104,15 @@ export const useMediaUpload = (roomId?: string) => {
   const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(
     undefined,
   );
+  const [loadingProgress, setLoadingProgress] = useState<Progress>({
+    process: 'media upload',
+    progress: 0,
+    isLoading: false,
+  });
+
+  const handleProgress = (progress: number) => {
+    setLoadingProgress(prevState => ({...prevState, progress}));
+  };
 
   const handlePickerOpen = useCallback(async () => {
     try {
@@ -114,8 +124,38 @@ export const useMediaUpload = (roomId?: string) => {
       if (!asset) {
         return;
       }
-      setSelectedAsset(asset);
+
+      if (asset.type?.includes('image/gif')) {
+        setSelectedAsset(asset);
+        return;
+      }
+
+      setLoadingProgress({
+        process: 'compressing media',
+        progress: 0,
+        isLoading: true,
+      });
+      const compressedAsset = await getCompressed({
+        asset: {
+          uri: asset.uri,
+          type: asset.type,
+          width: asset.width,
+          height: asset.height,
+        },
+        onProgress: handleProgress,
+      });
+      setLoadingProgress({
+        process: 'compression complete',
+        progress: 0,
+        isLoading: false,
+      });
+      setSelectedAsset({...asset, ...(compressedAsset ?? {})});
     } catch (e) {
+      setLoadingProgress({
+        process: 'compression failed',
+        progress: 0,
+        isLoading: false,
+      });
       console.log(e);
     }
   }, []);
@@ -133,7 +173,26 @@ export const useMediaUpload = (roomId?: string) => {
       const reference = storage().ref(`/rooms/${roomId}/${fileName}`);
       const task = reference.putFile(selectedAsset.uri);
 
+      setLoadingProgress({
+        process: 'uploading media',
+        progress: 0,
+        isLoading: true,
+      });
+
+      task.on('state_changed', taskSnapshot => {
+        handleProgress(
+          Math.ceil(taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) *
+            100,
+        );
+      });
+
       await task;
+      setLoadingProgress({
+        process: 'upload complete',
+        progress: 0,
+        isLoading: false,
+      });
+
       const downloadUrl = await reference.getDownloadURL();
       return {
         url: downloadUrl,
@@ -152,5 +211,6 @@ export const useMediaUpload = (roomId?: string) => {
     onAssetDismiss: handleAssetDismiss,
     onAssetUpload: handleUpload,
     selectedAsset,
+    loadingProgress,
   };
 };

@@ -2,11 +2,14 @@ import React, {useMemo} from 'react';
 import {TouchableOpacityProps} from 'react-native';
 import styled from 'styled-components/native';
 import {DateTime} from 'luxon';
+import FastImage from 'react-native-fast-image';
 
 import {RepliedTo, Asset} from '@/types';
 import {Color} from '@/utilities/theme';
 import {getScaledImageMeasurements} from '@/utilities/functions';
 import Text from '@/components/Text';
+
+import PlayIcon from '@/assets/icons/play.svg';
 
 interface MessageProps extends TouchableOpacityProps {
   color: 'black' | 'onyx';
@@ -59,9 +62,17 @@ const AssetContainer = styled.View`
   border-bottom-width: 3px;
   border-color: ${({theme}) => theme.colors.accent};
   margin-bottom: -3px;
+  justify-content: center;
 `;
 
-const AssetImage = styled.Image``;
+const AssetImage = styled(FastImage)<{width: number; height: number}>`
+  width: ${({width}) => width}px;
+  height: ${({height}) => height}px;
+`;
+
+const VideoIcon = styled(PlayIcon)`
+  position: absolute;
+`;
 
 const Message = ({
   color,
@@ -86,6 +97,7 @@ const Message = ({
               horizontalInset: 20 * 2 + 3 * 2,
             }),
             uri: asset.url,
+            isVideo: !asset.type ? false : asset.type.includes('video'),
           },
     [asset],
   );
@@ -106,10 +118,14 @@ const Message = ({
   const AssetComponent = assetInfo ? (
     <AssetContainer>
       <AssetImage
-        source={{uri: assetInfo.uri}}
+        source={{
+          uri: assetInfo.uri,
+        }}
         width={assetInfo.width}
         height={assetInfo.height}
+        resizeMode={FastImage.resizeMode.contain}
       />
+      {assetInfo.isVideo ? <VideoIcon /> : null}
     </AssetContainer>
   ) : null;
   const MessageBody = body ? (

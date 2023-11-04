@@ -67,8 +67,13 @@ const Room = ({route, navigation}: RoomProps) => {
   );
   const {currentUser} = useContext(AuthContext);
   const {modalVisible, onModalOpen, onModalClose} = useModal();
-  const {onMediaPickerOpen, onAssetDismiss, onAssetUpload, selectedAsset} =
-    useMediaUpload(roomId);
+  const {
+    onMediaPickerOpen,
+    onAssetDismiss,
+    onAssetUpload,
+    selectedAsset,
+    loadingProgress,
+  } = useMediaUpload(roomId);
 
   const handleScrollToEnd = () => {
     listRef?.current?.scrollToIndex({index: 0, animated: false});
@@ -253,6 +258,7 @@ const Room = ({route, navigation}: RoomProps) => {
           onReplyDismiss={handleReplyDismiss}
           selectedAsset={selectedAsset}
           onAssetDismiss={onAssetDismiss}
+          loadingProgress={loadingProgress}
         />
       </KeyboardAvoidingContainer>
       <MessageModal

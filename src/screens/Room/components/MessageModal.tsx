@@ -2,11 +2,13 @@ import React, {useMemo} from 'react';
 import {Dimensions} from 'react-native';
 import styled from 'styled-components/native';
 import {DateTime} from 'luxon';
+import FastImage from 'react-native-fast-image';
 
 import {Message} from '@/types';
 import {getScaledImageMeasurements} from '@/utilities/functions';
 import Modal, {ModalProps} from '@/components/Modal';
 import Text from '@/components/Text';
+import VideoPlayer from '@/components/VideoPlayer';
 
 import ReplyIcon from '@/assets/icons/reply.svg';
 import CopyIcon from '@/assets/icons/copy.svg';
@@ -50,7 +52,10 @@ const AssetContainer = styled.View`
   border-color: ${({theme}) => theme.colors.accent};
 `;
 
-const AssetImage = styled.Image``;
+const AssetImage = styled(FastImage)<{width: number; height: number}>`
+  width: ${({width}) => width}px;
+  height: ${({height}) => height}px;
+`;
 
 const MessageModal = ({
   message,
@@ -70,6 +75,9 @@ const MessageModal = ({
               horizontalInset: 20 * 2 + 3 * 2,
             }),
             uri: message.asset.url,
+            isVideo: !message.asset.type
+              ? false
+              : message.asset.type.includes('video'),
           },
     [message?.asset],
   );
@@ -79,11 +87,19 @@ const MessageModal = ({
 
   const Asset = assetInfo ? (
     <AssetContainer>
-      <AssetImage
-        source={{uri: assetInfo.uri}}
-        height={assetInfo.height}
-        width={assetInfo.width}
-      />
+      {assetInfo.isVideo ? (
+        <VideoPlayer
+          uri={assetInfo.uri}
+          width={assetInfo.width}
+          height={assetInfo.height}
+        />
+      ) : (
+        <AssetImage
+          source={{uri: assetInfo.uri}}
+          height={assetInfo.height}
+          width={assetInfo.width}
+        />
+      )}
     </AssetContainer>
   ) : null;
 
