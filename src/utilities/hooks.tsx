@@ -116,7 +116,10 @@ export const useMediaUpload = (roomId?: string) => {
 
   const handlePickerOpen = useCallback(async () => {
     try {
-      const result = await launchImageLibrary({mediaType: 'mixed'});
+      const result = await launchImageLibrary({
+        mediaType: 'mixed',
+        formatAsMp4: true,
+      });
       if (result.didCancel) {
         return;
       }
