@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import SplashScreen from 'react-native-splash-screen';
 
 import {User} from '@/types';
 
@@ -66,6 +67,8 @@ const AuthContextProvider = ({children}: AuthContextProviderProps) => {
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(handleAuthStateChange);
+
+    SplashScreen.hide();
 
     return subscriber;
   }, [handleAuthStateChange]);
