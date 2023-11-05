@@ -1,4 +1,7 @@
+![deranged unga bunga](ios/DerangedMail/Images.xcassets/AppIcon.appiconset/AppIcon-60@2x~car.png)
+
 # Deranged Mail
+
 messaging for slightly deranged
 
 ## Setup
