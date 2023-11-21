@@ -16,7 +16,6 @@ interface VideoPlayerProps {
 enum VideoStates {
   LOADING = 'video loading',
   PLAYING = 'playing',
-  FINISHED = 'video ended',
 }
 
 const PROGRESS_HEIGHT = 8;
@@ -102,7 +101,6 @@ const VideoPlayer = ({width, height, uri}: VideoPlayerProps) => {
 
   const handleEnd = () => {
     setProgressWidth(progressTotalWidth ?? 0);
-    setVideoStatus(VideoStates.FINISHED);
   };
 
   return (
