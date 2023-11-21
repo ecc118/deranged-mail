@@ -8,6 +8,7 @@ import {RepliedTo, Asset} from '@/types';
 import {Color} from '@/utilities/theme';
 import {getScaledImageMeasurements} from '@/utilities/functions';
 import Text from '@/components/Text';
+import Image from '@/components/Image';
 
 import PlayIcon from '@/assets/icons/play.svg';
 
@@ -65,9 +66,16 @@ const AssetContainer = styled.View`
   justify-content: center;
 `;
 
-const AssetImage = styled(FastImage)<{width: number; height: number}>`
-  width: ${({width}) => width}px;
-  height: ${({height}) => height}px;
+const VideoIconContainer = styled.View`
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+`;
+
+const VideoIconBackground = styled.View`
+  background-color: ${({theme}) => theme.colors.onyx};
+  height: 35px;
+  width: 35px;
 `;
 
 const VideoIcon = styled(PlayIcon)`
@@ -96,7 +104,7 @@ const Message = ({
               defaultHeight: asset?.height,
               horizontalInset: 20 * 2 + 3 * 2,
             }),
-            uri: asset.url,
+            uri: asset.thumbnailUrl ?? asset.url,
             isVideo: !asset.type ? false : asset.type.includes('video'),
           },
     [asset],
@@ -117,7 +125,7 @@ const Message = ({
   ) : null;
   const AssetComponent = assetInfo ? (
     <AssetContainer>
-      <AssetImage
+      <Image
         source={{
           uri: assetInfo.uri,
         }}
@@ -125,7 +133,12 @@ const Message = ({
         height={assetInfo.height}
         resizeMode={FastImage.resizeMode.contain}
       />
-      {assetInfo.isVideo ? <VideoIcon /> : null}
+      {assetInfo.isVideo ? (
+        <VideoIconContainer>
+          <VideoIconBackground />
+          <VideoIcon />
+        </VideoIconContainer>
+      ) : null}
     </AssetContainer>
   ) : null;
   const MessageBody = body ? (

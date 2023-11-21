@@ -1,11 +1,17 @@
 import {useEffect, useState, useMemo, useRef, useCallback} from 'react';
 import {Keyboard} from 'react-native';
-import {launchImageLibrary, Asset} from 'react-native-image-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 import 'react-native-get-random-values';
 import {v4 as uuidv4} from 'uuid';
 import storage from '@react-native-firebase/storage';
+import {clearCache} from 'react-native-compressor';
 
-import {Message, Asset as MessageAsset, Progress} from '@/types';
+import {
+  Message,
+  Asset as MessageAsset,
+  Progress,
+  CompressedAsset,
+} from '@/types';
 import {MESSAGES_LIMIT} from '@/utilities/constants';
 import {getCompressed} from '@/utilities/functions';
 
@@ -101,9 +107,9 @@ export const useMessagesPagination = (messages: Message[]) => {
 };
 
 export const useMediaUpload = (roomId?: string) => {
-  const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(
-    undefined,
-  );
+  const [selectedAsset, setSelectedAsset] = useState<
+    CompressedAsset | undefined
+  >(undefined);
   const [loadingProgress, setLoadingProgress] = useState<Progress>({
     process: 'media upload',
     progress: 0,
@@ -174,7 +180,19 @@ export const useMediaUpload = (roomId?: string) => {
     try {
       const fileName = uuidv4();
       const reference = storage().ref(`/rooms/${roomId}/${fileName}`);
+
+      const thumbnailFileName = selectedAsset.thumbnailUri
+        ? fileName + '_thumbnail'
+        : null;
+      const thumbnailRef = thumbnailFileName
+        ? storage().ref(`/rooms/${roomId}/${thumbnailFileName}`)
+        : null;
+
       const task = reference.putFile(selectedAsset.uri);
+      const taskThumbnail =
+        thumbnailRef && selectedAsset.thumbnailUri
+          ? thumbnailRef.putFile(selectedAsset.thumbnailUri)
+          : Promise.resolve();
 
       setLoadingProgress({
         process: 'uploading media',
@@ -189,7 +207,9 @@ export const useMediaUpload = (roomId?: string) => {
         );
       });
 
-      await task;
+      await Promise.all([task, taskThumbnail]);
+      await clearCache();
+
       setLoadingProgress({
         process: 'upload complete',
         progress: 0,
@@ -197,11 +217,16 @@ export const useMediaUpload = (roomId?: string) => {
       });
 
       const downloadUrl = await reference.getDownloadURL();
+      const thumbnailDownloadUrl = thumbnailRef
+        ? await thumbnailRef.getDownloadURL()
+        : null;
+
       return {
         url: downloadUrl,
         type: selectedAsset.type,
         width: selectedAsset.width,
         height: selectedAsset.height,
+        ...(thumbnailDownloadUrl ? {thumbnailUrl: thumbnailDownloadUrl} : {}),
       };
     } catch (e) {
       console.log(e);

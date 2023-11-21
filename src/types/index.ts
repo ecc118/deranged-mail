@@ -1,3 +1,5 @@
+import {Asset as ImagePickerAsset} from 'react-native-image-picker';
+
 export interface User {
   username: string;
   uid: string;
@@ -16,6 +18,7 @@ export interface Asset {
   type?: string;
   width?: number;
   height?: number;
+  thumbnailUrl?: string;
 }
 
 export interface Message {
@@ -31,4 +34,8 @@ export interface Progress {
   process: string;
   progress: number;
   isLoading: boolean;
+}
+
+export interface CompressedAsset extends ImagePickerAsset {
+  thumbnailUri?: string;
 }

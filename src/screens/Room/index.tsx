@@ -177,6 +177,9 @@ const Room = ({route, navigation}: RoomProps) => {
                     type: asset?.type,
                     width: asset.width,
                     height: asset.height,
+                    ...(asset.thumbnailUrl
+                      ? {thumbnailUrl: asset.thumbnailUrl}
+                      : {}),
                   },
                 }
               : {}),

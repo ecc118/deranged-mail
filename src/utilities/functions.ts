@@ -1,8 +1,8 @@
 import {Dimensions} from 'react-native';
 import {DateTime} from 'luxon';
-import {Image, Video} from 'react-native-compressor';
+import {Image, Video, createVideoThumbnail} from 'react-native-compressor';
 
-import {Message} from '@/types';
+import {Message, CompressedAsset} from '@/types';
 import {
   MAX_COMPRESSED_SIZE,
   IMAGE_COMPRESSION_QUALITY,
@@ -61,7 +61,7 @@ export const getCompressed = async ({
 }: {
   asset: {uri?: string; type?: string; width?: number; height?: number};
   onProgress?: (progress: number) => void;
-}) => {
+}): Promise<CompressedAsset | null> => {
   if (!asset.uri || !asset.type) {
     return null;
   }
@@ -95,7 +95,20 @@ export const getCompressed = async ({
       },
     );
 
-    return {uri: compressedVideo, width: resizedWidth, height: resizedHeight};
+    const thumbnail = await createVideoThumbnail(compressedVideo);
+    const compressedThumbnail = await Image.compress(thumbnail.path, {
+      compressionMethod: 'manual',
+      maxWidth: resizedWidth,
+      maxHeight: resizedHeight,
+      quality: IMAGE_COMPRESSION_QUALITY,
+    });
+
+    return {
+      uri: compressedVideo,
+      width: resizedWidth,
+      height: resizedHeight,
+      thumbnailUri: compressedThumbnail,
+    };
   }
 
   const compressedImage = await Image.compress(asset.uri, {
