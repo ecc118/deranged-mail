@@ -7,24 +7,25 @@ import Text from '@/components/Text';
 import NotFoundIcon from '@/assets/icons/404.svg';
 import RemovedFileIcon from '@/assets/icons/removed-file.svg';
 
-interface ImageProps extends FastImageProps {
+interface Dimensions {
   width: number;
   height: number;
 }
 
-const AssetImage = styled(FastImage)<{width: number; height: number}>`
+const AssetImage = styled(FastImage)<Dimensions>`
   width: ${({width}) => width}px;
   height: ${({height}) => height}px;
 `;
 
-const NotFoundContainer = styled.View`
-  height: 150px;
+const NotFoundContainer = styled.View<Dimensions>`
+  width: ${({width}) => width}px;
+  height: ${({height}) => height}px;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 15px;
+  padding: 10px 0;
 `;
 
-const Image = ({...props}: ImageProps) => {
+const Image = ({width, height, ...props}: FastImageProps & Dimensions) => {
   const [isValid, setIsValid] = useState<boolean>(true);
 
   const handleError = () => {
@@ -32,11 +33,18 @@ const Image = ({...props}: ImageProps) => {
   };
 
   if (isValid) {
-    return <AssetImage onError={handleError} {...props} />;
+    return (
+      <AssetImage
+        onError={handleError}
+        width={width}
+        height={height}
+        {...props}
+      />
+    );
   }
 
   return (
-    <NotFoundContainer>
+    <NotFoundContainer width={width} height={height}>
       <NotFoundIcon height={40} width={40} />
       <RemovedFileIcon />
       <Text color="accent" type="headingS">
