@@ -109,7 +109,10 @@ const Message = ({
           },
     [asset],
   );
-  const time = DateTime.fromISO(date).toFormat('HH:mm');
+  const datetime = DateTime.fromISO(date);
+  const time = datetime.hasSame(DateTime.local(), 'day')
+    ? datetime.toFormat('HH:mm')
+    : datetime.toFormat('MM.dd HH:mm');
   const Footer = !noFooter && (
     <AuthorContainer authorAlign={authorAlign}>
       <Text color="gray">
