@@ -1,14 +1,15 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState, useEffect} from 'react';
 import {Dimensions} from 'react-native';
 import styled from 'styled-components/native';
 import {DateTime} from 'luxon';
-import FastImage from 'react-native-fast-image';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 import {Message} from '@/types';
 import {getScaledImageMeasurements} from '@/utilities/functions';
 import Modal, {ModalProps} from '@/components/Modal';
 import Text from '@/components/Text';
 import VideoPlayer from '@/components/VideoPlayer';
+import Image from '@/components/Image';
 
 import ReplyIcon from '@/assets/icons/reply.svg';
 import CopyIcon from '@/assets/icons/copy.svg';
@@ -52,17 +53,20 @@ const AssetContainer = styled.View`
   border-color: ${({theme}) => theme.colors.accent};
 `;
 
-const AssetImage = styled(FastImage)<{width: number; height: number}>`
-  width: ${({width}) => width}px;
-  height: ${({height}) => height}px;
+const CopyStatusContainer = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
 `;
 
 const MessageModal = ({
   message,
   onReply,
   onClose,
+  visible,
   ...props
 }: MessageModalProps) => {
+  const [textCopied, setTextCopied] = useState<boolean>(false);
   const assetInfo = useMemo(
     () =>
       !message?.asset
@@ -94,7 +98,7 @@ const MessageModal = ({
           height={assetInfo.height}
         />
       ) : (
-        <AssetImage
+        <Image
           source={{uri: assetInfo.uri}}
           height={assetInfo.height}
           width={assetInfo.width}
@@ -109,6 +113,14 @@ const MessageModal = ({
     </MessageContainer>
   ) : null;
 
+  const CopyButtonInner = textCopied ? (
+    <CopyStatusContainer>
+      <Text color="gray">copied</Text>
+    </CopyStatusContainer>
+  ) : (
+    <CopyIcon />
+  );
+
   const handleReplyPress = () => {
     onReply?.(message);
     onClose?.();
@@ -120,8 +132,21 @@ const MessageModal = ({
     </Button>
   ) : null;
 
+  const handleMessageCopy = () => {
+    if (!message?.body) {
+      return;
+    }
+
+    Clipboard.setString(message.body);
+    setTextCopied(true);
+  };
+
+  useEffect(() => {
+    setTextCopied(false);
+  }, [visible]);
+
   return (
-    <Modal {...props} onClose={onClose}>
+    <Modal {...props} visible={visible} onClose={onClose}>
       <Container>
         <Heading>
           <Text>{message?.author} </Text>
@@ -130,8 +155,8 @@ const MessageModal = ({
         {Asset}
         {MessageBody}
         <ActionContainer>
-          <Button>
-            <CopyIcon />
+          <Button onPress={handleMessageCopy} disabled={textCopied}>
+            {CopyButtonInner}
           </Button>
           {ReplyButton}
         </ActionContainer>
