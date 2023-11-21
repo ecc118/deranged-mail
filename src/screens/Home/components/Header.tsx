@@ -41,10 +41,7 @@ const IconContainer = styled.View`
 
 const Separator = styled.View`
   width: 100%;
-  border-bottom-width: 3px;
-  border-style: dashed;
-  border-color: ${({theme}) => theme.colors.ebony};
-  margin-top: 20px;
+  height: 20px;
 `;
 
 const Header = () => {
