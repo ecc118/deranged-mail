@@ -20,7 +20,7 @@ const Content = styled.View`
 `;
 
 const Login = ({}: LoginProps) => {
-  const {onSignIn} = useContext(AuthContext);
+  const {onSignIn, signInError} = useContext(AuthContext);
   const handleEnter = async (username: string) => {
     onSignIn?.(username);
   };
@@ -31,7 +31,7 @@ const Login = ({}: LoginProps) => {
         <Text type="headingL" color="accent">
           ENTRANCE
         </Text>
-        <Form onPress={handleEnter} />
+        <Form onPress={handleEnter} errorMessage={signInError} />
       </Content>
     </Container>
   );

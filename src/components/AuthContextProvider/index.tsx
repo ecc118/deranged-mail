@@ -19,6 +19,7 @@ interface AuthContextProviderProps {
 export const AuthContext = createContext<{
   currentUser?: User;
   initializing: boolean;
+  signInError?: string;
   onSignIn?: (username: string) => void;
   fetchUser?: (uid: string) => Promise<void>;
 }>({initializing: true});
@@ -26,6 +27,7 @@ export const AuthContext = createContext<{
 const AuthContextProvider = ({children}: AuthContextProviderProps) => {
   const [currentUser, setCurrentUser] = useState<User | undefined>(undefined);
   const [initializing, setInitializing] = useState<boolean>(true);
+  const [signInError, setSignInError] = useState<string | undefined>(undefined);
   const registerInitializingRef = useRef<boolean | null>(false);
 
   const handleGetUser = useCallback(async (uid?: string) => {
@@ -53,6 +55,24 @@ const AuthContextProvider = ({children}: AuthContextProviderProps) => {
 
     try {
       const authRes = await auth().signInAnonymously();
+
+      const snapshot = await firestore()
+        .collection('users')
+        .where('username', '==', username)
+        .get();
+
+      if (snapshot.size) {
+        setSignInError('username is taken');
+        setInitializing(false);
+        registerInitializingRef.current = false;
+
+        return;
+      }
+
+      if (signInError) {
+        setSignInError(undefined);
+      }
+
       await firestore()
         .collection('users')
         .doc(authRes.user.uid)
@@ -78,6 +98,7 @@ const AuthContextProvider = ({children}: AuthContextProviderProps) => {
       value={{
         currentUser,
         initializing,
+        signInError,
         onSignIn: handleSignIn,
         fetchUser: handleGetUser,
       }}>
