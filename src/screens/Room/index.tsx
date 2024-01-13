@@ -209,7 +209,7 @@ const Room = ({route, navigation}: RoomProps) => {
 
         sendNotification({
           fcmToken: recipient.current.fcmToken,
-          title: recipient.current.username,
+          title: currentUser?.username || '???',
           body: croppedBody,
           roomId,
         });
