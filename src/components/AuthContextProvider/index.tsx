@@ -38,7 +38,7 @@ const AuthContextProvider = ({children}: AuthContextProviderProps) => {
     const data = snapshot.data() as User | undefined;
 
     const fcmToken = await messaging().getToken();
-    if (fcmToken !== data?.fcmToken) {
+    if (fcmToken !== data?.fcmToken && data) {
       await firestore().collection('users').doc(uid).update({fcmToken});
     }
 

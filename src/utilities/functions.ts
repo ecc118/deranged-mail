@@ -179,7 +179,7 @@ export const sendNotification = async ({
       notification: {
         title,
         body,
-        sound: 'chant',
+        sound: 'chant.mp3',
         android_channel_id: 'deranged_channel',
       },
       data: {
