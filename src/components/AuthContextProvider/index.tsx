@@ -35,7 +35,14 @@ const AuthContextProvider = ({children}: AuthContextProviderProps) => {
 
   const handleGetUser = useCallback(async (uid?: string) => {
     const snapshot = await firestore().collection('users').doc(uid).get();
-    setCurrentUser(snapshot.data() as User | undefined);
+    const data = snapshot.data() as User | undefined;
+
+    const fcmToken = await messaging().getToken();
+    if (fcmToken !== data?.fcmToken) {
+      await firestore().collection('users').doc(uid).update({fcmToken});
+    }
+
+    setCurrentUser(data ? {...data, fcmToken} : undefined);
     setInitializing(false);
   }, []);
 
