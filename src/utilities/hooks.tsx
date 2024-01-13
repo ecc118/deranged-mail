@@ -211,7 +211,9 @@ export const useMediaUpload = (roomId?: string) => {
       });
 
       await Promise.all([task, taskThumbnail]);
-      await clearCache();
+      if (thumbnailRef) {
+        await clearCache();
+      }
 
       setLoadingProgress({
         process: 'upload complete',
