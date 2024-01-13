@@ -1,11 +1,16 @@
-import {Dimensions} from 'react-native';
+import {Dimensions, PermissionsAndroid, Platform} from 'react-native';
 import {DateTime} from 'luxon';
 import {Image, Video, createVideoThumbnail} from 'react-native-compressor';
+import messaging from '@react-native-firebase/messaging';
+import Config from 'react-native-config';
+import notifee from '@notifee/react-native';
 
-import {Message, CompressedAsset} from '@/types';
+import {Message, CompressedAsset, Asset} from '@/types';
 import {
   MAX_COMPRESSED_SIZE,
   IMAGE_COMPRESSION_QUALITY,
+  MAX_CHARS_NOTIFICATION_BODY,
+  NOTIFICATION_BODY,
 } from '@/utilities/constants';
 
 export const getMiddleMessage = (
@@ -119,4 +124,90 @@ export const getCompressed = async ({
   });
 
   return {uri: compressedImage, width: resizedWidth, height: resizedHeight};
+};
+
+export const requestNotificationPermission = async () => {
+  if (Platform.OS === 'android') {
+    const res = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+    );
+
+    return res === PermissionsAndroid.RESULTS.granted;
+  }
+
+  const authStatus = await messaging().requestPermission();
+
+  return (
+    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+    authStatus === messaging.AuthorizationStatus.PROVISIONAL
+  );
+};
+
+export const getNotificationBody = (body: string, asset: Asset | null) => {
+  const isTooLong = body.length > MAX_CHARS_NOTIFICATION_BODY;
+  const croppedBody = isTooLong
+    ? body.substring(0, MAX_CHARS_NOTIFICATION_BODY) + '...'
+    : body;
+
+  if (!asset) {
+    return croppedBody;
+  }
+
+  const isVideo = asset.type?.includes('video');
+  const hasBody = body.length;
+  const bodyPrefix = isVideo
+    ? NOTIFICATION_BODY.VIDEO
+    : NOTIFICATION_BODY.IMAGE;
+
+  return bodyPrefix + (hasBody ? `: ${croppedBody}` : '');
+};
+
+export const sendNotification = async ({
+  fcmToken,
+  title,
+  body,
+  roomId,
+}: {
+  fcmToken: string;
+  title: string;
+  body: string;
+  roomId: string;
+}) => {
+  await fetch('https://fcm.googleapis.com/fcm/send', {
+    body: JSON.stringify({
+      to: fcmToken,
+      notification: {
+        title,
+        body,
+        sound: 'chant',
+        android_channel_id: 'deranged_channel',
+      },
+      data: {
+        roomId,
+      },
+      content_available: true,
+      priority: 'high',
+    }),
+    headers: {
+      Authorization: `key=${Config.SERVER_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+  });
+};
+
+export const getForegroundNotificationUnsubscribe = (roomId?: string) => {
+  return messaging().onMessage(async remoteMessage => {
+    if (roomId === remoteMessage.data?.roomId) {
+      return;
+    }
+
+    await notifee.displayNotification({
+      title: remoteMessage.notification?.title,
+      body: remoteMessage.notification?.body,
+      android: {
+        channelId: 'deranged_channel',
+      },
+    });
+  });
 };

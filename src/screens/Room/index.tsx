@@ -15,15 +15,17 @@ import 'react-native-get-random-values';
 import {v4 as uuidv4} from 'uuid';
 
 import {RootStackScreenProps} from '@/types/navigation';
-import {Message as MessageType} from '@/types';
+import {Message as MessageType, Recipient} from '@/types';
 
 import {
   useModal,
   useMessagesPagination,
   useMediaUpload,
+  useForegroundNotifications,
 } from '@/utilities/hooks';
 import ScreenContainer from '@/components/ScreenContainer';
 import {AuthContext} from '@/components/AuthContextProvider';
+import {sendNotification, getNotificationBody} from '@/utilities/functions';
 
 import Message from './components/Message';
 import MessageInput from './components/MessageInput';
@@ -74,6 +76,9 @@ const Room = ({route, navigation}: RoomProps) => {
     selectedAsset,
     loadingProgress,
   } = useMediaUpload(roomId);
+  const recipient = useRef<Recipient | null>(null);
+
+  useForegroundNotifications(roomId, true);
 
   const handleScrollToEnd = () => {
     listRef?.current?.scrollToIndex({index: 0, animated: false});
@@ -119,6 +124,19 @@ const Room = ({route, navigation}: RoomProps) => {
         .doc(documentId)
         .get();
       const data = snapshot.data();
+
+      const recipientSnapshot = await firestore()
+        .collection('users')
+        .doc(route.params.participant.uid)
+        .get();
+      const recipientData = recipientSnapshot.data();
+
+      if (recipientData) {
+        recipient.current = {
+          username: recipientData.username,
+          fcmToken: recipientData.fcmToken,
+        };
+      }
 
       if (data) {
         setRoomId(documentId);
@@ -185,6 +203,17 @@ const Room = ({route, navigation}: RoomProps) => {
               : {}),
           }),
         });
+
+      if (recipient.current) {
+        const croppedBody = getNotificationBody(body, asset);
+
+        sendNotification({
+          fcmToken: recipient.current.fcmToken,
+          title: recipient.current.username,
+          body: croppedBody,
+          roomId,
+        });
+      }
     } catch (e) {
       console.log(e);
     }

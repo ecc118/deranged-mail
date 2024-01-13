@@ -1647,6 +1647,11 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@notifee/react-native@^7.8.2":
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/@notifee/react-native/-/react-native-7.8.2.tgz#72d3199ae830b4128ddaef3c1c2f11604759c9c4"
+  integrity sha512-VG4IkWJIlOKqXwa3aExC3WFCVCGCC9BA55Ivg0SMRfEs+ruvYy/zlLANcrVGiPtgkUEryXDhA8SXx9+JcO8oLA==
+
 "@react-native-clipboard/clipboard@^1.12.1":
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/@react-native-clipboard/clipboard/-/clipboard-1.12.1.tgz#a23f9defb732077afa860d0598baa95f5ee9f54b"
@@ -6421,6 +6426,11 @@ react-native-compressor@^1.8.15:
   version "1.8.15"
   resolved "https://registry.yarnpkg.com/react-native-compressor/-/react-native-compressor-1.8.15.tgz#90eb9eea7290a6af0ec62764d7b102caa4d9150d"
   integrity sha512-8aoFTsvtMO8+DhjoJu7Et/3GVW56eRQpUQcEKEgNGvJIOYIIs2SN2flvjR51U+a8BXI1wEXs1yd7VXP3Uv0Brg==
+
+react-native-config@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/react-native-config/-/react-native-config-1.5.1.tgz#73c94f511493e9b7ff9350cdf351d203a1b05acc"
+  integrity sha512-g1xNgt1tV95FCX+iWz6YJonxXkQX0GdD3fB8xQtR1GUBEqweB9zMROW77gi2TygmYmUkBI7LU4pES+zcTyK4HA==
 
 react-native-fast-image@^8.6.3:
   version "8.6.3"

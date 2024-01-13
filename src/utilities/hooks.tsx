@@ -13,7 +13,10 @@ import {
   CompressedAsset,
 } from '@/types';
 import {MESSAGES_LIMIT} from '@/utilities/constants';
-import {getCompressed} from '@/utilities/functions';
+import {
+  getCompressed,
+  getForegroundNotificationUnsubscribe,
+} from '@/utilities/functions';
 
 export const useKeyboard = () => {
   const [height, setHeight] = useState<number>(0);
@@ -241,4 +244,20 @@ export const useMediaUpload = (roomId?: string) => {
     selectedAsset,
     loadingProgress,
   };
+};
+
+export const useForegroundNotifications = (
+  roomId?: string,
+  waitForRoomId?: boolean,
+) => {
+  useEffect(() => {
+    if (waitForRoomId && !roomId) {
+      return;
+    }
+
+    const unsubscribeNotificationListener =
+      getForegroundNotificationUnsubscribe(roomId);
+
+    return unsubscribeNotificationListener;
+  }, [roomId, waitForRoomId]);
 };

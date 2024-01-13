@@ -4,7 +4,10 @@ export interface User {
   username: string;
   uid: string;
   knownUsers: KnownUser[];
+  fcmToken: string;
 }
+
+export type Recipient = Pick<User, 'username' | 'fcmToken'>;
 
 export type KnownUser = Pick<User, 'username' | 'uid'>;
 

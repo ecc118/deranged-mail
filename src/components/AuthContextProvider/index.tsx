@@ -9,6 +9,9 @@ import React, {
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import SplashScreen from 'react-native-splash-screen';
+import messaging from '@react-native-firebase/messaging';
+
+import {requestNotificationPermission} from '@/utilities/functions';
 
 import {User} from '@/types';
 
@@ -73,15 +76,21 @@ const AuthContextProvider = ({children}: AuthContextProviderProps) => {
         setSignInError(undefined);
       }
 
-      await firestore()
-        .collection('users')
-        .doc(authRes.user.uid)
-        .set({username: username, uid: authRes.user.uid, knownUsers: []});
+      const fcmToken = await messaging().getToken();
+
+      await firestore().collection('users').doc(authRes.user.uid).set({
+        username: username,
+        uid: authRes.user.uid,
+        fcmToken,
+        knownUsers: [],
+      });
       await handleGetUser(authRes.user.uid);
       registerInitializingRef.current = false;
     } catch (e) {
       registerInitializingRef.current = false;
       console.log(e);
+    } finally {
+      await requestNotificationPermission();
     }
   };
 

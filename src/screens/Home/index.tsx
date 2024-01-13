@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import styled from 'styled-components/native';
 
 import {RootStackScreenProps} from '@/types/navigation';
@@ -6,6 +6,7 @@ import {KnownUser} from '@/types';
 
 import ScreenContainer from '@/components/ScreenContainer';
 import {AuthContext} from '@/components/AuthContextProvider';
+import {getForegroundNotificationUnsubscribe} from '@/utilities/functions';
 
 import User from './components/User';
 import Header from './components/Header';
@@ -31,6 +32,24 @@ const Home = ({navigation}: HomeProps) => {
       />
     );
   };
+
+  useEffect(() => {
+    let unsubscribeNotificationListener: (() => void) | null = null;
+
+    const unsubscribeFocus = navigation.addListener('focus', () => {
+      unsubscribeNotificationListener = getForegroundNotificationUnsubscribe();
+    });
+
+    const unsubscribeBlur = navigation.addListener('blur', () => {
+      unsubscribeNotificationListener?.();
+    });
+
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+      unsubscribeNotificationListener?.();
+    };
+  }, [navigation]);
 
   return (
     <ScreenContainer>
