@@ -1,15 +1,20 @@
 import React, {useMemo, useState, useEffect} from 'react';
-import {Dimensions} from 'react-native';
+import {Dimensions, Linking} from 'react-native';
 import styled from 'styled-components/native';
 import {DateTime} from 'luxon';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {Match} from 'linkify-it';
 
 import {Message} from '@/types';
-import {getScaledImageMeasurements} from '@/utilities/functions';
+import {
+  getScaledImageMeasurements,
+  getMessageLink,
+} from '@/utilities/functions';
 import Modal, {ModalProps} from '@/components/Modal';
 import Text from '@/components/Text';
 import VideoPlayer from '@/components/VideoPlayer';
 import Image from '@/components/Image';
+import UrlPreview from '@/components/UrlPreview';
 
 import ReplyIcon from '@/assets/icons/reply.svg';
 import CopyIcon from '@/assets/icons/copy.svg';
@@ -88,6 +93,33 @@ const MessageModal = ({
   const time = message?.time
     ? DateTime.fromISO(message.time).toFormat('HH:mm yyyy.MM.dd')
     : null;
+  const links = useMemo(
+    () => (message?.body ? getMessageLink(message?.body) : null),
+    [message?.body],
+  );
+
+  const handleLinkOpen = async (url: string) => {
+    const canOpen = await Linking.canOpenURL(url);
+
+    if (!canOpen) {
+      Clipboard.setString(url);
+      return;
+    }
+
+    Linking.openURL(url);
+  };
+
+  const renderLink = (match: Match, index: number) => {
+    const key = `link-${index}`;
+
+    return (
+      <UrlPreview
+        key={key}
+        url={match.url}
+        onPress={() => handleLinkOpen(match.url)}
+      />
+    );
+  };
 
   const Asset = assetInfo ? (
     <AssetContainer>
@@ -112,6 +144,8 @@ const MessageModal = ({
       <Text color="main">{message?.body}</Text>
     </MessageContainer>
   ) : null;
+
+  const Links = links ? links.map(renderLink) : null;
 
   const CopyButtonInner = textCopied ? (
     <CopyStatusContainer>
@@ -154,6 +188,7 @@ const MessageModal = ({
         </Heading>
         {Asset}
         {MessageBody}
+        {Links}
         <ActionContainer>
           <Button onPress={handleMessageCopy} disabled={textCopied}>
             {CopyButtonInner}

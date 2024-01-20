@@ -3,12 +3,17 @@ import {TouchableOpacityProps} from 'react-native';
 import styled from 'styled-components/native';
 import {DateTime} from 'luxon';
 import FastImage from 'react-native-fast-image';
+import {Match} from 'linkify-it';
 
 import {RepliedTo, Asset} from '@/types';
 import {Color} from '@/utilities/theme';
-import {getScaledImageMeasurements} from '@/utilities/functions';
+import {
+  getScaledImageMeasurements,
+  getMessageLink,
+} from '@/utilities/functions';
 import Text from '@/components/Text';
 import Image from '@/components/Image';
+import UrlPreview from '@/components/UrlPreview';
 
 import PlayIcon from '@/assets/icons/play.svg';
 
@@ -113,6 +118,14 @@ const Message = ({
   const time = datetime.hasSame(DateTime.local(), 'day')
     ? datetime.toFormat('HH:mm')
     : datetime.toFormat('MM.dd HH:mm');
+  const links = useMemo(() => getMessageLink(body), [body]);
+
+  const renderLink = (match: Match, index: number) => {
+    const key = `link-${index}`;
+
+    return <UrlPreview key={key} url={match.url} />;
+  };
+
   const Footer = !noFooter && (
     <AuthorContainer authorAlign={authorAlign}>
       <Text color="gray">
@@ -150,12 +163,14 @@ const Message = ({
       <BodyText color="main">{body}</BodyText>
     </MessageContainer>
   ) : null;
+  const Links = links ? links.map(renderLink) : null;
 
   return (
     <ContainerOuter noFooter={noFooter}>
       <Container color={color} noFooter={noFooter} onPress={onPress}>
         {AssetComponent}
         {MessageBody}
+        {Links}
       </Container>
       {Footer}
     </ContainerOuter>

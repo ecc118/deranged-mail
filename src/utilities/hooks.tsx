@@ -41,9 +41,9 @@ export const useKeyboard = () => {
 export const useModal = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-  const handleModalOpen = () => {
+  const handleModalOpen = useCallback(() => {
     setModalVisible(true);
-  };
+  }, []);
 
   const handleModalClose = () => {
     setModalVisible(false);
