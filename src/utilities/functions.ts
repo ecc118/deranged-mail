@@ -5,6 +5,9 @@ import messaging from '@react-native-firebase/messaging';
 import Config from 'react-native-config';
 import notifee from '@notifee/react-native';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
+import linkifyit from 'linkify-it';
+import tlds from 'tlds';
+import HTMLParser from 'node-html-parser';
 
 import {Message, CompressedAsset, Asset} from '@/types';
 import {
@@ -221,4 +224,46 @@ export const getForegroundNotificationUnsubscribe = (roomId?: string) => {
       },
     });
   });
+};
+
+export const getMessageLink = (body: string) => {
+  const linkify = linkifyit();
+
+  linkify
+    .tlds(tlds)
+    .tlds('onion', true)
+    .add('git:', 'http:')
+    .add('ftp:', null)
+    .set({fuzzyIP: true});
+
+  const match = linkify.match(body);
+
+  return match;
+};
+
+export const parseUrl = async (url: string) => {
+  try {
+    const res = await fetch(url);
+    const data = await res.text();
+
+    const root = HTMLParser.parse(data);
+    const titleQueryRes = root.querySelector('title');
+    const imageQueryRes = root.querySelector('meta[property="og:image"]');
+    const descriptionQueryRes = root.querySelector('meta[name="description"]');
+
+    const title = titleQueryRes?.textContent;
+    const imageUrl = imageQueryRes?.attrs.content;
+    const description = descriptionQueryRes?.attrs.content;
+
+    return title || imageUrl || description
+      ? {
+          title,
+          imageUrl,
+          description,
+        }
+      : null;
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
 };

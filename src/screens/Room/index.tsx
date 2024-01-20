@@ -84,29 +84,35 @@ const Room = ({route, navigation}: RoomProps) => {
     listRef?.current?.scrollToIndex({index: 0, animated: false});
   };
 
-  const handleMessagePress = (message: MessageType) => {
-    setSelectedMessage(message);
-    onModalOpen();
-  };
+  const handleMessagePress = useCallback(
+    (message: MessageType) => {
+      setSelectedMessage(message);
+      onModalOpen();
+    },
+    [onModalOpen],
+  );
 
-  const renderItem: ListRenderItem<MessageType> = ({item}) => {
-    const color = item.author === currentUser?.username ? 'onyx' : 'black';
-    const authorAlign =
-      item.author === currentUser?.username ? 'right' : 'left';
+  const renderItem: ListRenderItem<MessageType> = useCallback(
+    ({item}) => {
+      const color = item.author === currentUser?.username ? 'onyx' : 'black';
+      const authorAlign =
+        item.author === currentUser?.username ? 'right' : 'left';
 
-    return (
-      <Message
-        body={item.body}
-        author={item.author}
-        color={color}
-        authorAlign={authorAlign}
-        date={item.time}
-        repliedTo={item.repliedTo}
-        onPress={() => handleMessagePress(item)}
-        asset={item.asset}
-      />
-    );
-  };
+      return (
+        <Message
+          body={item.body}
+          author={item.author}
+          color={color}
+          authorAlign={authorAlign}
+          date={item.time}
+          repliedTo={item.repliedTo}
+          onPress={() => handleMessagePress(item)}
+          asset={item.asset}
+        />
+      );
+    },
+    [currentUser?.username, handleMessagePress],
+  );
 
   const handleRoomInit = useCallback(async () => {
     if (!currentUser) {
@@ -267,6 +273,8 @@ const Room = ({route, navigation}: RoomProps) => {
     setReplyMessage(undefined);
   };
 
+  const handleKeyExtraction = useCallback((item: MessageType) => item.id, []);
+
   return (
     <ScreenContainer hasNavigationPadding loading={loading || initial}>
       <KeyboardAvoidingContainer behavior={keyboardBehavior}>
@@ -276,7 +284,7 @@ const Room = ({route, navigation}: RoomProps) => {
             ref={listRef}
             data={messagesData}
             renderItem={renderItem}
-            keyExtractor={(item, index) => `${item.author}-message-${index}`}
+            keyExtractor={handleKeyExtraction}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{paddingBottom: 20}}
             inverted
