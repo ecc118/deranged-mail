@@ -4,6 +4,7 @@ import {Image, Video, createVideoThumbnail} from 'react-native-compressor';
 import messaging from '@react-native-firebase/messaging';
 import Config from 'react-native-config';
 import notifee from '@notifee/react-native';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 
 import {Message, CompressedAsset, Asset} from '@/types';
 import {
@@ -116,7 +117,17 @@ export const getCompressed = async ({
     };
   }
 
-  const compressedImage = await Image.compress(asset.uri, {
+  // fix android/ios camera orientation bug
+  const resizedAsset = await ImageResizer.createResizedImage(
+    asset.uri,
+    asset.width || resizedWidth,
+    asset.height || resizedHeight,
+    'JPEG',
+    100,
+    0,
+  );
+
+  const compressedImage = await Image.compress(resizedAsset.uri, {
     compressionMethod: 'manual',
     maxWidth: resizedWidth,
     maxHeight: resizedHeight,
